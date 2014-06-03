@@ -1,0 +1,46 @@
+#!/bin/bash
+
+# Ishaan Gulrajani
+# June 3 2014
+#
+# By default, watch for changes in ./coffee and compile ./coffee/app.coffee into
+# ./public/app.js every time something changes.
+#
+# Run with 'release' to disable watching and compile minified JS.
+
+cd "$(dirname "$0")"
+
+export PATH="$(pwd)/../node_modules/.bin:$PATH"
+
+if [ "$1" = "release" ]
+then
+  browserify coffee/app.coffee -t coffee-reactify |
+    uglifyjs -cm > public/app.js
+else
+  echo "Watching... ctrl-c to stop"
+
+  while true
+  do
+    watchify coffee/app.coffee -v -d -t coffee-reactify -o public/app.js
+
+    # Error code 130 means ctrl-c, others mean crashed.
+    if [ "$?" -eq "130" ]
+    then
+      echo "Shutting down..."
+      exit
+    else
+      echo "Watchify crashed. Waiting for changes to restart..."
+      trap 'echo "Shutting down..."; exit' 2
+
+      # Loop infinitely until /coffee changes
+      chsum1=`find coffee/ -type f -exec md5 {} \;`
+      chsum2=$chsum1
+      while [ "$chsum1" = "$chsum2" ]
+      do
+        chsum2=`find coffee/ -type f -exec md5 {} \;`
+        sleep 1
+      done
+      
+    fi
+  done
+fi
