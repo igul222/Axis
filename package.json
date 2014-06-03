@@ -3,7 +3,10 @@
   "version": "0.0.1",
   "dependencies": {
     "browserify": "^4.1.8",
-    "watchify": "^0.10.2",
-    "coffee-reactify": "^0.1.2"
+    "coffee-reactify": "^0.1.2",
+    "envify": "^1.2.1",
+    "react": "^0.10.0",
+    "uglifyify": "^2.4.0",
+    "watchify": "^0.10.2"
   }
 }
