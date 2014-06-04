@@ -1,4 +1,4 @@
-React = require('react')
+React = require('react/addons')
 page  = require('page')
 
 Welcome = require('./welcome.coffee')
