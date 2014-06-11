@@ -2,9 +2,12 @@
 # Starts the web server
 
 # Express
-http    = require('http')
 express = require('express')
 app     = express()
+http    = require('http').Server(app)
+
+# Socket.io
+io      = require('socket.io')(http);
 
 app.set 'port', process.env.PORT || 3000
 app.use express.static('public')
@@ -15,10 +18,14 @@ if app.get('env')=='development'
 else 
   app.use require('morgan')
 
+# Serve static content
 app.get '/*', (req, res) ->
   res.sendfile('public/index.html')
 
-http.createServer(app).listen app.get('port'), (err) ->
+require('./game_server.coffee')(io)
+
+# Start the server
+http.listen app.get('port'), (err) ->
   if err
     console.log 'Fatal error: '+err
   else
