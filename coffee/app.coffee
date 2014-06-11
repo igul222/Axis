@@ -7,11 +7,11 @@ Welcome = require('./welcome.coffee')
 App = React.createClass(
   render: ->
     # Initial render, before router and game client initialize.
-    return <div/> unless this.props.ctx and this.props.data
+    return <div/> unless this.props.route and this.props.data
 
     # Choose different content based on the current route context.
-    switch this.props.ctx.pathname
-      when '/' then content = <Welcome data={this.props.data} />
+    switch this.props.route
+      when 'welcome' then content = <Welcome data={this.props.data} />
       else content = <pre>props: {JSON.stringify(this.props, null, 4)}</pre>
 
     <div>
@@ -30,8 +30,8 @@ app = React.renderComponent(<App />, document.body)
 game.subscribe (data) ->
   app.setProps({data})
 
-# Define routes
-setCtx = (ctx) -> app.setProps({ctx})
-page '/*', setCtx
-page '/games/:gameId', setCtx
+# Routing
+goto = (route) -> ((ctx) -> app.setProps(route: route, params: ctx.params))
+page '/games/:id', goto('games')
+page '/', goto('welcome')
 page()
