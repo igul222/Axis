@@ -12,7 +12,7 @@ App = React.createClass(
     # Choose different content based on the current route context.
     switch this.props.ctx.pathname
       when '/' then content = <Welcome data={this.props.data} />
-      else content = <pre>props: {JSON.stringify(this.props)}</pre>
+      else content = <pre>props: {JSON.stringify(this.props, null, 4)}</pre>
 
     <div>
       <div className="navbar navbar-default navbar-static-top">
