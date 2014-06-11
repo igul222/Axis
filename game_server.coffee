@@ -11,6 +11,8 @@ module.exports = (io) ->
       @gameId = uuid.v4()
 
     addPlayer: (socket, name) ->
+      return if @started
+      
       teams = _.groupBy(@players, 'team')
       team = (if teams[0] <= teams[1] then 0 else 1)
 
