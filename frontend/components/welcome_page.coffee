@@ -1,5 +1,5 @@
 React = require('react/addons')
-game  = require('./game_client.coffee')
+game  = require('../game_client.coffee')
 
 module.exports = React.createClass(
   getInitialState: ->

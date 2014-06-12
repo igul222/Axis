@@ -8,11 +8,11 @@ class GameClient
       game: null
     }
 
-    @socket.on 'update', (gameData) ->
+    @socket.on 'update', (gameData) =>
       @data.game = gameData
       @_update()
 
-    @socket.on 'joinedGame', (gameId) ->
+    @socket.on 'joinedGame', (gameId) =>
       page('/games/'+gameId)
 
   subscribe: (callback) ->

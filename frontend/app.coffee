@@ -2,7 +2,9 @@ React = require('react/addons')
 page  = require('page')
 
 game = require('./game_client.coffee')
-Welcome = require('./welcome.coffee')
+
+WelcomePage = require('./components/welcome_page.coffee')
+GamePage    = require('./components/game_page.coffee')
 
 App = React.createClass(
   render: ->
@@ -11,8 +13,12 @@ App = React.createClass(
 
     # Choose different content based on the current route context.
     switch this.props.route
-      when 'welcome' then content = <Welcome data={this.props.data} />
-      else content = <pre>props: {JSON.stringify(this.props, null, 4)}</pre>
+      when 'welcome'
+        content = <WelcomePage data={this.props.data} />
+      when 'game'
+        content = <GamePage params={this.props.params} data={this.props.data} />
+      else
+        content = <pre>props: {JSON.stringify(this.props, null, 4)}</pre>
 
     <div>
       <div className="navbar navbar-default navbar-static-top">
@@ -32,6 +38,6 @@ game.subscribe (data) ->
 
 # Routing
 goto = (route) -> ((ctx) -> app.setProps(route: route, params: ctx.params))
-page '/games/:id', goto('games')
+page '/games/:id', goto('game')
 page '/', goto('welcome')
 page()
