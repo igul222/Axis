@@ -5,16 +5,25 @@ uuid = require('uuid')
 module.exports = (io) ->
 
   class Game
+    @games: {}
+    @openGame: new Game()
+
     constructor: ->
+      @id = uuid.v4()
       @players = []
+      @observers = []
       @started = false
-      @gameId = uuid.v4()
+
+      @constructor.games[@id] = this
+
+    hasPlayer: (socket) ->
+      @players.some((p) -> p.socket == socket)
 
     addPlayer: (socket, name) ->
       return if @started
-      
+
       teams = _.groupBy(@players, 'team')
-      team = (if teams[0] <= teams[1] then 0 else 1)
+      team = (if teams[0]? <= teams[1]? then 0 else 1)
 
       @players.push {
         socket: socket,
@@ -22,41 +31,61 @@ module.exports = (io) ->
         team: team
       }
 
-      @_update()
+      @_updateAll()
+      @addObserver(socket)
 
-    removePlayer: (socket) ->
-      @players = _.filter(@players, (p) -> p.socket == socket)
-      @_update()
+    addObserver: (socket) ->
+      return if _.contains(@observers, socket)
+      @observers.push(socket)
+      @_update(socket)
+
+    removePlayerOrObserver: (socket) ->
+      @observers = _.without(@observers, socket)
+
+      if @hasPlayer(socket)
+        @players = _.reject(@players, (p) -> p.socket == socket)
+        @_updateAll()
 
     start: ->
-      @started = true
-      @_update()
+      if this == @constructor.openGame
+        @constructor.openGame = new Game()
 
-    _update: ->
-      data =
+      @started = true
+      @_updateAll()
+
+    _update: (socket) ->
+      data =  
+        id: @id
         players: @players.map (p) ->
           name: p.name
           team: p.team
         started: @started
+      socket.emit('update', data)
 
-      for player in @players
-        player.socket.emit('update', data)
-
-  openGame = new Game()
+    _updateAll: ->
+      for socket in @observers
+        @_update(socket)
 
   io.on 'connection', (socket) ->
     currentGame = null
 
-    socket.on 'joinGame', (name) ->
-      openGame.addPlayer(socket, name)
-      currentGame = openGame
-      socket.emit('joinedGame', currentGame.gameId)
+    socket.on 'joinPublicGame', (name) ->
+      currentGame = Game.openGame
+      currentGame.addPlayer(socket, name)
+      socket.emit('joinedPublicGame', currentGame.id)
+
+    socket.on 'observeGame', (gameId) ->
+      currentGame = Game.games[gameId]
+      currentGame?.addObserver(socket)
 
     socket.on 'startGame', ->
+      return unless currentGame.hasPlayer(socket)
       currentGame.start()
-
       if currentGame == openGame
         openGame = new Game()
 
+    socket.on 'leaveGame', ->
+      currentGame?.removePlayerOrObserver(socket)
+
     socket.on 'disconnect', ->
-      currentGame?.removePlayer(socket)
+      currentGame?.removePlayerOrObserver(socket)

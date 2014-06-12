@@ -14,8 +14,8 @@ module.exports = React.createClass(
   nameValid: ->
     this.props.data.playerName.trim() != ''
 
-  joinGame: ->
-    game.joinGame()
+  joinPublicGame: ->
+    game.joinPublicGame()
 
   render: ->
     cx = React.addons.classSet
@@ -42,7 +42,7 @@ module.exports = React.createClass(
         <button
           disabled={!this.nameValid()}
           className="btn btn-primary btn-lg"
-          onClick={this.joinGame}
+          onClick={this.joinPublicGame}
           >
           Join a game
         </button>

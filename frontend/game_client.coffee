@@ -12,7 +12,7 @@ class GameClient
       @data.game = gameData
       @_update()
 
-    @socket.on 'joinedGame', (gameId) =>
+    @socket.on 'joinedPublicGame', (gameId) =>
       page('/games/'+gameId)
 
   subscribe: (callback) ->
@@ -23,8 +23,14 @@ class GameClient
     @data.playerName = playerName
     @_update()
 
-  joinGame: ->
-    @socket.emit('joinGame', @data.playerName)
+  joinPublicGame: ->
+    @socket.emit('joinPublicGame', @data.playerName)
+
+  observeGame: (gameId) ->
+    @socket.emit('observeGame', gameId)
+
+  leaveGame: ->
+    @socket.emit('leaveGame')
 
   _update: ->
     @callback(@data) if @callback
