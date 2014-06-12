@@ -1,5 +1,6 @@
 React = require('react/addons')
 _     = require('underscore')
+game  = require('../game_client.coffee')
 
 module.exports = React.createClass(
   teams: ->
@@ -7,10 +8,10 @@ module.exports = React.createClass(
     [teams[0] || [], teams[1] || []] # convert object to array
 
   gameCanStart: ->
-    @teams()[0].length > 1 && @teams()[1].length > 1
+    @teams()[0].length > 0 && @teams()[1].length > 0
 
   startGame: ->
-    # TODO implement
+    game.start()
 
   render: ->
     teams = @teams().map (team) -> team.map (player) ->

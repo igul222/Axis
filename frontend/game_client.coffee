@@ -26,11 +26,14 @@ class GameClient
   joinPublicGame: ->
     @socket.emit('joinPublicGame', @data.playerName)
 
-  observeGame: (gameId) ->
+  observe: (gameId) ->
     @socket.emit('observeGame', gameId)
 
-  leaveGame: ->
+  leave: ->
     @socket.emit('leaveGame')
+
+  start: ->
+    @socket.emit('startGame')
 
   _update: ->
     @callback(@data) if @callback

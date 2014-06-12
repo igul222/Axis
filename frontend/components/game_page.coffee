@@ -5,10 +5,10 @@ Lobby = require('./lobby.coffee')
 
 module.exports = React.createClass(
   componentDidMount: ->
-    game.observeGame(this.props.params.id)
+    game.observe(this.props.params.id)
 
   componentWillUnmount: ->
-    game.leaveGame()
+    game.leave()
 
   render: ->
     if not this.props.data.game
