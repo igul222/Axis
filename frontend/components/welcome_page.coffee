@@ -9,7 +9,7 @@ module.exports = React.createClass(
     game.setPlayerName(e.target.value)
 
   nameBlurred: (e) ->
-    this.setState(validatesName: this.state.validatesName || true)
+    this.setState(validatesName: true)
 
   nameValid: ->
     this.props.data.playerName.trim() != ''
