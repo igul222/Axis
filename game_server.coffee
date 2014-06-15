@@ -5,16 +5,11 @@ uuid = require('uuid')
 module.exports = (io) ->
 
   class Game
-    @games: {}
-    @openGame: new Game()
-
     constructor: ->
       @id = uuid.v4()
       @players = []
       @observers = []
       @started = false
-
-      @constructor.games[@id] = this
 
     hasPlayer: (socket) ->
       @players.some((p) -> p.socket == socket)
@@ -47,9 +42,6 @@ module.exports = (io) ->
         @_updateAll()
 
     start: ->
-      if this == @constructor.openGame
-        @constructor.openGame = new Game()
-
       @started = true
       @_updateAll()
 
@@ -66,16 +58,20 @@ module.exports = (io) ->
       for socket in @observers
         @_update(socket)
 
+  games = {}
+  openGame = new Game()
+  games[openGame.id] = openGame
+
   io.on 'connection', (socket) ->
     currentGame = null
 
     socket.on 'joinPublicGame', (name) ->
-      currentGame = Game.openGame
+      currentGame = openGame
       currentGame.addPlayer(socket, name)
       socket.emit('joinedPublicGame', currentGame.id)
 
     socket.on 'observeGame', (gameId) ->
-      currentGame = Game.games[gameId]
+      currentGame = games[gameId]
       currentGame?.addObserver(socket)
 
     socket.on 'startGame', ->
@@ -83,6 +79,7 @@ module.exports = (io) ->
       currentGame.start()
       if currentGame == openGame
         openGame = new Game()
+        games[openGame.id] = openGame
 
     socket.on 'leaveGame', ->
       currentGame?.removePlayerOrObserver(socket)
