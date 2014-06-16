@@ -1,7 +1,9 @@
+# The game's socket.io client and central data store
+
 page = require('page')
 Game = require('../game.coffee')
 
-class GameClient
+class Client
   constructor: ->
     @socket = io()
     @game = null
@@ -43,4 +45,4 @@ class GameClient
   _update: ->
     @callback(@data) if @callback
 
-module.exports = new GameClient()
+module.exports = new Client()

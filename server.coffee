@@ -1,4 +1,5 @@
 # The game's socket.io server
+
 Game = require('./game.coffee')
 
 module.exports = (io) ->

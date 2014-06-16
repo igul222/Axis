@@ -1,14 +1,14 @@
 React = require('react/addons')
-game  = require('../game_client.coffee')
+client = require('../client.coffee')
 
 Lobby = require('./lobby.coffee')
 
 module.exports = React.createClass(
   componentDidMount: ->
-    game.observe(this.props.params.id)
+    client.observe(this.props.params.id)
 
   componentWillUnmount: ->
-    game.leave()
+    client.leave()
 
   render: ->
     if not this.props.data.game

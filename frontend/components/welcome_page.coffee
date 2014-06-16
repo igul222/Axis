@@ -1,12 +1,12 @@
 React = require('react/addons')
-game  = require('../game_client.coffee')
+client = require('../client.coffee')
 
 module.exports = React.createClass(
   getInitialState: ->
     validatesName: false
 
   nameChanged: (e) ->
-    game.setPlayerName(e.target.value)
+    client.setPlayerName(e.target.value)
 
   nameBlurred: (e) ->
     this.setState(validatesName: true)
@@ -15,7 +15,7 @@ module.exports = React.createClass(
     this.props.data.playerName.trim() != ''
 
   joinPublicGame: ->
-    game.joinPublicGame()
+    client.joinPublicGame()
 
   render: ->
     cx = React.addons.classSet

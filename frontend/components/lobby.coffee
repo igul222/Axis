@@ -1,6 +1,6 @@
 React = require('react/addons')
 _     = require('underscore')
-game  = require('../game_client.coffee')
+client  = require('../client.coffee')
 
 module.exports = React.createClass(
   gameCanStart: ->
@@ -8,7 +8,7 @@ module.exports = React.createClass(
     @props.data.game.teams[1].players.length > 0
 
   startGame: ->
-    game.start()
+    client.start()
 
   render: ->
     teams = @props.data.game.teams.map (team) -> team.players.map (player) ->

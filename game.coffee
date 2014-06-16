@@ -1,3 +1,5 @@
+# Represents and manages a game's state
+
 _ = require('underscore')
 uuid = require('uuid')
 

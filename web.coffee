@@ -22,7 +22,7 @@ else
 app.get '/*', (req, res) ->
   res.sendfile('public/index.html')
 
-require('./game_server.coffee')(io)
+require('./server.coffee')(io)
 
 # Start the server
 http.listen app.get('port'), (err) ->
