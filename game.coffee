@@ -46,6 +46,17 @@ module.exports = class Game
         team.players = _.reject(team.players, (p) -> p.id == id)
       @_updateAll()
 
+    # Start the game.
+    start: ->
+      @state.started = true
+      @_updateAll()
+
+    # Force-update the game state to the given state. Use this to synchronize
+    # with another Game object.
+    setState: (newState) ->
+      @state = newState
+      @_updateAll()
+
     # Call the given callback whenever the game state changes, passing the
     # new game state as an argument. Accepts an id which you can pass to
     # unsubscribe if you want to stop the callbacks.
@@ -59,11 +70,6 @@ module.exports = class Game
     unsubscribe: (id) ->
       @subscriberIds = _.without(@subscriberIds, id)
       delete @subscriberCallbacks[id] if @subscriberCallbacks[id]
-
-    # Start the game.
-    start: ->
-      @state.started = true
-      @_updateAll()
 
     # Fire all the subscribed callbacks.
     _updateAll: ->
