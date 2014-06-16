@@ -2,56 +2,75 @@ _ = require('underscore')
 uuid = require('uuid')
 
 module.exports = class Game
+
     constructor: ->
-      @id = uuid.v4()
-      @players = []
-      @started = false
       @subscriberIds = []
       @subscriberCallbacks = {}
+      @id = uuid.v4()
+      @state =
+        id: @id
+        teams: [
+            active: false
+            players: []
+          ,
+            active: false
+            players: []
+        ]
+        started: false
 
-    hasPlayer: (id) ->
-      @players.some((p) -> p.id == id)
+    # Return the player with the given id, or undefined if none exists.
+    getPlayer: (id) ->
+      players = _.flatten(_.pluck(@state.teams, 'players'))
+      _.find(players, (p) -> p.id == id)
 
+    # Add a player (with given id and name) to the team with fewer players.
     addPlayer: (id, name) ->
       return if @started
 
-      teams = _.groupBy(@players, 'team')
-      team = (if teams[0]? <= teams[1]? then 0 else 1)
+      if @state.teams[0].players.length <= @state.teams[1].players.length
+        team = @state.teams[0]
+      else
+        team = @state.teams[1]
 
-      @players.push {
+      team.players.push {
         id: id,
         name: name,
-        team: team
+        active: false
+        dots: []
       }
 
       @_updateAll()
 
+    # Remove the player with the given id from the game if he exists.
     removePlayer: (id) ->
-      if @hasPlayer(id)
-        @players = _.reject(@players, (p) -> p.id == id)
-        @_updateAll()
+      for team in @state.teams
+        team.players = _.reject(team.players, (p) -> p.id == id)
+      @_updateAll()
 
+    # Call the given callback whenever the game state changes, passing the
+    # new game state as an argument. Accepts an id which you can pass to
+    # unsubscribe if you want to stop the callbacks.
     subscribe: (id, callback) ->
       return if _.contains(@subscriberIds, id)
       @subscriberIds.push(id)
       @subscriberCallbacks[id] = callback
       @_update(id)
 
+    # Stop calling the callback passed to subscribe with the given id.
     unsubscribe: (id) ->
       @subscriberIds = _.without(@subscriberIds, id)
       delete @subscriberCallbacks[id] if @subscriberCallbacks[id]
 
+    # Start the game.
     start: ->
-      @started = true
+      @state.started = true
       @_updateAll()
 
+    # Fire all the subscribed callbacks.
     _updateAll: ->
       for id in @subscriberIds
         @_update(id)
 
+    # Fire the subscribed callback with the given id only.
     _update: (subscriberId) ->
-      data =  
-        id: @id
-        players: @players
-        started: @started
-      @subscriberCallbacks[subscriberId](data)
+      @subscriberCallbacks[subscriberId](@state)

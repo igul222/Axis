@@ -20,15 +20,19 @@ module.exports = (io) ->
         socket.emit('update', state)
 
     socket.on 'startGame', ->
-      return unless currentGame?.hasPlayer(socket.id)
-
-      currentGame.start()
-      if currentGame == openGame
-        openGame = new Game()
-        games[openGame.id] = openGame
+      if currentGame?.getPlayer(socket.id)
+        currentGame.start()
+        
+        if currentGame == openGame
+          openGame = new Game()
+          games[openGame.id] = openGame
 
     socket.on 'leaveGame', ->
-      currentGame?.unsubscribe(socket.id)
+      if currentGame
+        currentGame.removePlayer(socket.id)
+        currentGame.unsubscribe(socket.id)
 
     socket.on 'disconnect', ->
-      currentGame?.unsubscribe(socket.id)
+      if currentGame
+        currentGame.removePlayer(socket.id)
+        currentGame.unsubscribe(socket.id)

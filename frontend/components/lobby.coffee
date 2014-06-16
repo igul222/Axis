@@ -3,19 +3,16 @@ _     = require('underscore')
 game  = require('../game_client.coffee')
 
 module.exports = React.createClass(
-  teams: ->
-    teams = _.groupBy(this.props.data.game.players, 'team')
-    [teams[0] || [], teams[1] || []] # convert object to array
-
   gameCanStart: ->
-    @teams()[0].length > 0 && @teams()[1].length > 0
+    @props.data.game.teams[0].players.length > 0 && 
+    @props.data.game.teams[1].players.length > 0
 
   startGame: ->
     game.start()
 
   render: ->
-    teams = @teams().map (team) -> team.map (player) ->
-      <li key={player.name}>{player.name}</li>
+    teams = @props.data.game.teams.map (team) -> team.players.map (player) ->
+      <li key={player.id}>{player.name}</li>
 
     <div className="row">
       <div className="col-sm-push-3 col-sm-6">
