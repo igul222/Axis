@@ -8,55 +8,56 @@ module.exports = (io) ->
     constructor: ->
       @id = uuid.v4()
       @players = []
-      @observers = []
       @started = false
+      @subscriberIds = []
+      @subscriberCallbacks = {}
 
-    hasPlayer: (socket) ->
-      @players.some((p) -> p.socket == socket)
+    hasPlayer: (id) ->
+      @players.some((p) -> p.id == id)
 
-    addPlayer: (socket, name) ->
+    addPlayer: (id, name) ->
       return if @started
 
       teams = _.groupBy(@players, 'team')
       team = (if teams[0]? <= teams[1]? then 0 else 1)
 
       @players.push {
-        socket: socket,
+        id: id,
         name: name,
         team: team
       }
 
       @_updateAll()
-      @addObserver(socket)
 
-    addObserver: (socket) ->
-      return if _.contains(@observers, socket)
-      @observers.push(socket)
-      @_update(socket)
-
-    removePlayerOrObserver: (socket) ->
-      @observers = _.without(@observers, socket)
-
-      if @hasPlayer(socket)
-        @players = _.reject(@players, (p) -> p.socket == socket)
+    removePlayer: (id) ->
+      if @hasPlayer(id)
+        @players = _.reject(@players, (p) -> p.id == id)
         @_updateAll()
+
+    subscribe: (id, callback) ->
+      return if _.contains(@subscriberIds, id)
+      @subscriberIds.push(id)
+      @subscriberCallbacks[id] = callback
+      @_update(id)
+
+    unsubscribe: (id) ->
+      @subscriberIds = _.without(@subscriberIds, id)
+      delete @subscriberCallbacks[id] if @subscriberCallbacks[id]
 
     start: ->
       @started = true
       @_updateAll()
 
-    _update: (socket) ->
+    _updateAll: ->
+      for id in @subscriberIds
+        @_update(id)
+
+    _update: (subscriberId) ->
       data =  
         id: @id
-        players: @players.map (p) ->
-          name: p.name
-          team: p.team
+        players: @players
         started: @started
-      socket.emit('update', data)
-
-    _updateAll: ->
-      for socket in @observers
-        @_update(socket)
+      @subscriberCallbacks[subscriberId](data)
 
   games = {}
   openGame = new Game()
@@ -67,22 +68,24 @@ module.exports = (io) ->
 
     socket.on 'joinPublicGame', (name) ->
       currentGame = openGame
-      currentGame.addPlayer(socket, name)
+      currentGame.addPlayer(socket.id, name)
       socket.emit('joinedPublicGame', currentGame.id)
 
     socket.on 'observeGame', (gameId) ->
       currentGame = games[gameId]
-      currentGame?.addObserver(socket)
+      currentGame?.subscribe socket.id, (state) ->
+        socket.emit('update', state)
 
     socket.on 'startGame', ->
-      return unless currentGame.hasPlayer(socket)
+      return unless currentGame?.hasPlayer(socket.id)
+
       currentGame.start()
       if currentGame == openGame
         openGame = new Game()
         games[openGame.id] = openGame
 
     socket.on 'leaveGame', ->
-      currentGame?.removePlayerOrObserver(socket)
+      currentGame?.unsubscribe(socket.id)
 
     socket.on 'disconnect', ->
-      currentGame?.removePlayerOrObserver(socket)
+      currentGame?.unsubscribe(socket.id)
