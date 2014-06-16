@@ -9,25 +9,25 @@ module.exports = (io) ->
   io.on 'connection', (socket) ->
     currentGame = null
 
-    socket.on 'joinPublicGame', (name) ->
+    socket.on 'joinPublic', (name) ->
       currentGame = openGame
       currentGame.addPlayer(socket.id, name)
-      socket.emit('joinedPublicGame', currentGame.id)
+      socket.emit('joinedPublic', currentGame.id)
 
-    socket.on 'observeGame', (gameId) ->
+    socket.on 'observe', (gameId) ->
       currentGame = games[gameId]
       currentGame?.subscribe socket.id, (state) ->
         socket.emit('update', state)
 
-    socket.on 'startGame', ->
+    socket.on 'start', ->
       if currentGame?.getPlayer(socket.id)
         currentGame.start()
-        
+
         if currentGame == openGame
           openGame = new Game()
           games[openGame.id] = openGame
 
-    socket.on 'leaveGame', ->
+    socket.on 'leave', ->
       if currentGame
         currentGame.removePlayer(socket.id)
         currentGame.unsubscribe(socket.id)
