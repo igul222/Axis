@@ -4,7 +4,7 @@ Game = require('./game.coffee')
 module.exports = (io) ->
   games = {}
   openGame = new Game()
-  games[openGame.id] = openGame
+  games[openGame.state.id] = openGame
 
   io.on 'connection', (socket) ->
     currentGame = null
@@ -12,7 +12,7 @@ module.exports = (io) ->
     socket.on 'joinPublic', (name) ->
       currentGame = openGame
       currentGame.addPlayer(socket.id, name)
-      socket.emit('joinedPublic', currentGame.id)
+      socket.emit('joinedPublic', currentGame.state.id)
 
     socket.on 'observe', (gameId) ->
       currentGame = games[gameId]
@@ -25,7 +25,7 @@ module.exports = (io) ->
 
         if currentGame == openGame
           openGame = new Game()
-          games[openGame.id] = openGame
+          games[openGame.state.id] = openGame
 
     socket.on 'leave', ->
       if currentGame

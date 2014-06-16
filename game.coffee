@@ -6,9 +6,8 @@ module.exports = class Game
     constructor: ->
       @subscriberIds = []
       @subscriberCallbacks = {}
-      @id = uuid.v4()
       @state =
-        id: @id
+        id: uuid.v4()
         teams: [
             active: false
             players: []
