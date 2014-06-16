@@ -19,10 +19,9 @@ module.exports = class Game
         ]
         started: false
 
-    # Return the player with the given id, or undefined if none exists.
-    getPlayer: (id) ->
-      players = _.flatten(_.pluck(@state.teams, 'players'))
-      _.find(players, (p) -> p.id == id)
+    #########
+    # Players
+    #########
 
     # Add a player (with given id and name) to the team with fewer players.
     addPlayer: (id, name) ->
@@ -48,10 +47,23 @@ module.exports = class Game
         team.players = _.reject(team.players, (p) -> p.id == id)
       @_updateAll()
 
+    # Return the player with the given id, or undefined if none exists.
+    getPlayer: (id) ->
+      players = _.flatten(_.pluck(@state.teams, 'players'))
+      _.find(players, (p) -> p.id == id)
+
+    ##########
+    # Gameplay
+    ##########
+
     # Start the game.
     start: ->
       @state.started = true
       @_updateAll()
+
+    ######################
+    # Sync / subscriptions
+    ######################
 
     # Force-update the game state to the given state. Use this to synchronize
     # with another Game object.
