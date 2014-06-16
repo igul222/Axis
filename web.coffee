@@ -22,6 +22,7 @@ else
 app.get '/*', (req, res) ->
   res.sendfile('public/index.html')
 
+# Load the socket.io handlers
 require('./server.coffee')(io)
 
 # Start the server
