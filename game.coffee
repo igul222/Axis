@@ -90,7 +90,59 @@ module.exports = class Game
         )
       )
     
-    
+    advanceTurn: ->
+      #keep track of which states have been switched already, so that when one is switched, it can be broken out of
+      switchedStates = 
+        team: false
+        player: false
+        dot: false
+
+      #loop through teams, so long as teams haven't been switched yet, switch when the active one is found
+      _.each(@state.teams, (team, teamindex, teams)->
+        if(!switchedStates.team)
+          if(team.active)
+            team.active = false
+            switchedStates.team = true
+            
+            #if the active team is the last team, then reset to first team
+            if(teamindex == teams.length-1) #parameters: index, list
+              @state.team[0].active = true
+            else
+              @state.team[teamindex+1].active = true
+          
+          _.each(team.players, (player, playerindex, players)->
+            if(!switchedStates.player)
+              if(player.active)
+                player.active = false
+                switchedStates.player = true
+
+                #if the active is last, then reset to first
+                if(playerindex == players.length-1)
+                  players[0].active = true
+                else
+                  players[playerindex+1].active = true
+
+              _.each(player.dots, (dot, dotindex, dots)->
+                if(!switchedStates.dot)
+                  if(dot.active)
+                    dot.active = false
+                    switchedStates.dot = true
+
+                    #if active is last, reset to first
+                    if(dotindex == dots.length-1)
+                      dots[0].active = true
+                    else
+                      dots[dotindex+1].active = true
+              )
+          )
+      )
+
+    advance:(index, list)->
+      if(index == list.length-1) #parameters: index, list
+        list[0].active = true
+      else
+        list[index+1].active = true
+       
     ######################
     # Sync / subscriptions
     ######################
