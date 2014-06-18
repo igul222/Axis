@@ -59,8 +59,38 @@ module.exports = class Game
     # Start the game.
     start: ->
       @state.started = true
+      @generateDots()
+      console.log(_.sample(_.sample(@state.teams).players).dots)
       @_updateAll()
 
+    #random xy coordinate within given rectangle (origin and size)
+    randomPointInRect: (x0, y0, width, height) ->
+      point =
+        x: Math.floor(Math.random()*width)+x0
+        y: Math.floor(Math.random()*height)+y0
+      point
+
+    # Generate random positions for beginning gameplay
+    generateDots:->
+      randomPointInRect = @randomPointInRect
+
+      #fixed width and height, but should come from state
+      height = 800
+      width = 800
+
+      _.each(@state.teams, (team, teamindex, teams) ->
+        #area of the graph, divided into rectangles of the same height
+        subdivheight = (height/team.players.length)
+        subdivwidth = (width/2)
+
+        _.each(team.players, 
+          (player, playerindex, players) ->
+            for dot in [0...Math.floor(6/team.players.length)]
+              player.dots.push(randomPointInRect(subdivwidth*teamindex, playerindex*subdivheight, subdivwidth, subdivheight))
+        )
+      )
+    
+    
     ######################
     # Sync / subscriptions
     ######################
