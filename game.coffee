@@ -11,7 +11,7 @@ module.exports = class Game
       @state =
         id: uuid.v4()
         teams: [
-            active: false
+            active: true
             players: []
           ,
             active: false
@@ -60,7 +60,17 @@ module.exports = class Game
     start: ->
       @state.started = true
       @generateDots()
+
       console.log(_.sample(_.sample(@state.teams).players).dots)
+
+      @state.teams[0].active = true
+      @state.teams[0].players[0].active = true
+      @state.teams[0].players[0].dots[0].active = true
+
+      console.log(@state)
+      @advanceTurn(@state)
+      console.log(@state)
+
       @_updateAll()
 
     #random xy coordinate within given rectangle (origin and size)
@@ -89,16 +99,46 @@ module.exports = class Game
               player.dots.push(randomPointInRect(subdivwidth*teamindex, playerindex*subdivheight, subdivwidth, subdivheight))
         )
       )
+
+    isEmptyObject: (obj)->
+      for prop in obj
+        if (Object.prototype.hasOwnProperty.call(obj, prop))
+          false
+      true
+
+    advance: (list, index)->
+      list[index].active = false
+      if(index+1 >= list.length)
+        list[0].active = true
+        0
+      else
+        list[index+1].active = true
+        index+1
+
+    loopThroughArrayAtLevel: (list)->
+      advance = @advance
+      isEmptyObject = @isEmptyObject
+      _.each(list, (value, keyorindex, list)->
+        if(value.active)
+          newIndex = advance(list, keyorindex)
+          if(isEmptyObject(list[keyorindex]))
+            return null
+          @(list[newIndex])
+      )
+
+    advanceTurn:(state)->
+      @loopThroughArrayAtLevel(state.teams)
     
-    advanceTurn: ->
+    advanceTurnOld:(state)->
       #keep track of which states have been switched already, so that when one is switched, it can be broken out of
       switchedStates = 
         team: false
         player: false
         dot: false
 
+
       #loop through teams, so long as teams haven't been switched yet, switch when the active one is found
-      _.each(@state.teams, (team, teamindex, teams)->
+      _.each(state.teams, (team, teamindex, teams)->
         if(!switchedStates.team)
           if(team.active)
             team.active = false
@@ -106,9 +146,9 @@ module.exports = class Game
             
             #if the active team is the last team, then reset to first team
             if(teamindex == teams.length-1) #parameters: index, list
-              @state.team[0].active = true
+              state.teams[0].active = true
             else
-              @state.team[teamindex+1].active = true
+              state.teams[teamindex+1].active = true
           
           _.each(team.players, (player, playerindex, players)->
             if(!switchedStates.player)
@@ -136,12 +176,6 @@ module.exports = class Game
               )
           )
       )
-
-    advance:(index, list)->
-      if(index == list.length-1) #parameters: index, list
-        list[0].active = true
-      else
-        list[index+1].active = true
        
     ######################
     # Sync / subscriptions
