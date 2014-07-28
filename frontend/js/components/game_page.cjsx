@@ -1,7 +1,7 @@
 React = require('react/addons')
 client = require('../client.coffee')
 
-Lobby = require('./lobby.coffee')
+Lobby = require('./lobby.cjsx')
 
 module.exports = React.createClass(
   componentDidMount: ->

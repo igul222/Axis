@@ -12,15 +12,15 @@ io      = require('socket.io')(http);
 app.set 'port', process.env.PORT || 3000
 app.use express.static('public')
 
-# logger
 if app.get('env')=='development'
-  app.use require('morgan')('dev')
+  app.use require('morgan')('dev') # logger
+  app.use require('connect-livereload')()
 else 
   app.use require('morgan')
 
-# Serve static content
+# Serve index.html for all routes
 app.get '/*', (req, res) ->
-  res.sendfile('public/index.html')
+  res.render('app.jade')
 
 # Load the socket.io handlers
 require('./server.coffee')(io)
