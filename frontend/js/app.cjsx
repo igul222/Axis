@@ -3,8 +3,8 @@ page  = require('page')
 
 client = require('./client.coffee')
 
-WelcomePage = require('./components/welcome_page.coffee')
-GamePage    = require('./components/game_page.coffee')
+WelcomePage = require('./components/welcome_page.cjsx')
+GamePage    = require('./components/game_page.cjsx')
 
 App = React.createClass(
   render: ->

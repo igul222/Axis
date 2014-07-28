@@ -1,7 +1,7 @@
 # The game's socket.io client and central data store
 
 page = require('page')
-Game = require('../game.coffee')
+Game = require('../../game.coffee')
 
 class Client
   constructor: ->
