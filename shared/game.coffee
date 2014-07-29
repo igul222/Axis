@@ -77,7 +77,7 @@ module.exports = class Game
       @_updateAll()
 
     # Populate players with randomly positioned dots
-    generateDots: ->
+    generateInitialPositions: ->
 
       randomPoint = (x0, y0, width, height) ->
         x: Math.floor(Math.random() * width) + x0
@@ -103,8 +103,8 @@ module.exports = class Game
 
     # Advance the game by one turn, updating team/player/dot active values
     advanceTurn: ->
-      recursivelyAdvance: (ary) ->
-        return unless ary
+      recursivelyAdvance = (ary) ->
+        return unless ary?
         for item,i in ary
           if item.active
             item.active = false
