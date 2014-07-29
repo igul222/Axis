@@ -1,7 +1,7 @@
 React = require('react/addons')
 _     = require('underscore')
 
-{canvas, div} = React.DOM
+# {canvas, div} = React.DOM
 
 module.exports = React.createClass(
   componentDidMount: ->
@@ -93,11 +93,5 @@ module.exports = React.createClass(
     return
 
   render: ->
-    canvas
-      style:
-        backgroundColor: "black"
-
-      width: 800
-      height: 800
-
+    <canvas style={background_color: "black"} width = 800 height = 800 />
 )
