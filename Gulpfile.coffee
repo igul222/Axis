@@ -73,7 +73,7 @@ gulp.task 'default', ->
   gulp.watch ['./frontend/css/**/*'], (evt) ->
     compileCSS(false)
 
-  gulp.watch ['./frontend/js/**/*'], (evt) ->
+  gulp.watch ['./frontend/js/**/*', './shared/**/*'], (evt) ->
     compileJS(false)
 
   gulp.watch ['./public/**/*'], (evt) ->

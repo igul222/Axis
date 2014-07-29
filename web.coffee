@@ -18,12 +18,13 @@ if app.get('env')=='development'
 else 
   app.use require('morgan')
 
-# Serve index.html for all routes
+# Serve index.jade for all routes
+app.set 'views', __dirname + '/backend'
 app.get '/*', (req, res) ->
-  res.render('app.jade')
+  res.render('index.jade')
 
 # Load the socket.io handlers
-require('./server.coffee')(io)
+require('./backend/server.coffee')(io)
 
 # Start the server
 http.listen app.get('port'), (err) ->

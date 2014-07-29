@@ -1,6 +1,6 @@
 # The game's socket.io server
 
-Game = require('./game.coffee')
+Game = require('../shared/game.coffee')
 
 module.exports = (io) ->
   games = {}
