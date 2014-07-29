@@ -1,7 +1,5 @@
 React = require('react/addons')
-Graph = require('./graph.coffee')
-
-{div} = React.DOM
+Graph = require('./graph.cjsx')
 
 module.exports = React.createClass(
   getInitialState: ->
@@ -19,9 +17,7 @@ module.exports = React.createClass(
     requestAnimationFrame @tick
 
   render: ->
-    div {}, [Graph(
-      t: @state.t
-      equations: [
+    <Graph t={state.t} equations={[
         {
           equation: @state.equation
           origin:
@@ -30,14 +26,13 @@ module.exports = React.createClass(
         }
         {
           equation: (x) ->
-            0.4 * x * Math.sin(x / 2)
-
+            0.4*x*Math.sin(x/2)
+          
           origin:
             x: -275
             y: 15
         }
-      ]
-      width: @state.height
-      height: @state.width
-    )]
+      ]}
+      width = {@state.width}
+      height = {@state.height} />
 )
