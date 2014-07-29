@@ -1,6 +1,10 @@
 React = require('react/addons')
 
 module.exports = React.createClass(
+  AXIS_COLOR: 'rgb(255,255,255)'
+  FUNCTION_COLOR: 'rgb(11,125,150)'
+  FUNCTION_THICKNESS: 3 # 3px
+
   componentDidMount: ->
     context = @getDOMNode().getContext("2d")
     @paint(context)
@@ -17,7 +21,7 @@ module.exports = React.createClass(
     x0 = 0.5 * @props.width
     y0 = 0.5 * @props.height
     context.beginPath()
-    context.strokeStyle = 'rgb(255,255,255)'
+    context.strokeStyle = @AXIS_COLOR
     context.moveTo(0, y0) # x axis
     context.lineTo(@props.width, y0)
     context.moveTo(x0, x0) # y axis
@@ -29,8 +33,8 @@ module.exports = React.createClass(
         context: context
         func: fn
         t: @props.t
-        color: 'rgb(11,125,150)'
-        thickness: 3
+        color: @FUNCTION_COLOR
+        thickness: @FUNCTION_THICKNESS
       )
 
     context.restore()
