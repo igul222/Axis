@@ -4,6 +4,9 @@ _ = require('underscore')
 uuid = require('uuid')
 
 module.exports = class Game
+    BOARD_WIDTH: 25
+    BOARD_HEIGHT: 15
+    DOTS_PER_PLAYER: 2
 
     constructor: ->
       @subscriberIds = []
@@ -73,110 +76,43 @@ module.exports = class Game
 
       @_updateAll()
 
-    #random xy coordinate within given rectangle (origin and size)
-    randomPointInRect: (x0, y0, width, height) ->
-      point =
-        x: Math.floor(Math.random()*width)+x0
-        y: Math.floor(Math.random()*height)+y0
-      point
+    # Populate players with randomly positioned dots
+    generateDots: ->
 
-    # Generate random positions for beginning gameplay
-    generateDots:->
-      randomPointInRect = @randomPointInRect
+      randomPoint = (x0, y0, width, height) ->
+        x: Math.floor(Math.random() * width) + x0
+        y: Math.floor(Math.random() * height) + y0
 
-      #fixed width and height, but should come from state
-      height = 800
-      width = 800
-
-      _.each(@state.teams, (team, teamindex, teams) ->
-        #area of the graph, divided into rectangles of the same height
-        subdivheight = (height/team.players.length)
-        subdivwidth = (width/2)
-
-        _.each(team.players, 
-          (player, playerindex, players) ->
-            for dot in [0...Math.floor(6/team.players.length)]
-              player.dots.push(randomPointInRect(subdivwidth*teamindex, playerindex*subdivheight, subdivwidth, subdivheight))
+      dist = (point1, point2) ->
+        Math.sqrt(
+          Math.pow(point2.x - point1.x, 2) +
+          Math.pow(point2.y - point1.y, 2)
         )
-      )
 
-    isEmptyObject: (obj)->
-      for prop in obj
-        if (Object.prototype.hasOwnProperty.call(obj, prop))
-          false
-      true
+      # Keep track of generated dots to avoid generating two nearby dots
+      dots = []
 
-    advance: (list, index)->
-      list[index].active = false
-      if(index+1 >= list.length)
-        list[0].active = true
-        0
-      else
-        list[index+1].active = true
-        index+1
+      for team, teamIndex in @state.teams
+        hOffset = teamIndex * @BOARD_WIDTH / 2
+        for player in team.players
+          for i in [1..@DOTS_PER_PLAYER]
+            until dot? && dots.every((d)-> dist(dot,d) > 4)
+              dot = randomPoint(hOffset, 0, @BOARD_WIDTH / 2, @BOARD_HEIGHT)
+            dots.push(dot)
+            player.dots.push(dot)
 
-    loopThroughArrayAtLevel: (list)->
-      advance = @advance
-      isEmptyObject = @isEmptyObject
-      _.each(list, (value, keyorindex, list)->
-        if(value.active)
-          newIndex = advance(list, keyorindex)
-          if(isEmptyObject(list[keyorindex]))
-            return null
-          @(list[newIndex])
-      )
+    # Advance the game by one turn, updating team/player/dot active values
+    advanceTurn: ->
+      recursivelyAdvance: (ary) ->
+        return unless ary
+        for item,i in ary
+          if item.active
+            item.active = false
+            ary[(i+1) % ary.length].active = true
+            recursivelyAdvance(item.players || item.dots || null)
+            break
+      recursivelyAdvance(@state.teams)
 
-    advanceTurn:(state)->
-      @loopThroughArrayAtLevel(state.teams)
-    
-    advanceTurnOld:(state)->
-      #keep track of which states have been switched already, so that when one is switched, it can be broken out of
-      switchedStates = 
-        team: false
-        player: false
-        dot: false
-
-
-      #loop through teams, so long as teams haven't been switched yet, switch when the active one is found
-      _.each(state.teams, (team, teamindex, teams)->
-        if(!switchedStates.team)
-          if(team.active)
-            team.active = false
-            switchedStates.team = true
-            
-            #if the active team is the last team, then reset to first team
-            if(teamindex == teams.length-1) #parameters: index, list
-              state.teams[0].active = true
-            else
-              state.teams[teamindex+1].active = true
-          
-          _.each(team.players, (player, playerindex, players)->
-            if(!switchedStates.player)
-              if(player.active)
-                player.active = false
-                switchedStates.player = true
-
-                #if the active is last, then reset to first
-                if(playerindex == players.length-1)
-                  players[0].active = true
-                else
-                  players[playerindex+1].active = true
-
-              _.each(player.dots, (dot, dotindex, dots)->
-                if(!switchedStates.dot)
-                  if(dot.active)
-                    dot.active = false
-                    switchedStates.dot = true
-
-                    #if active is last, reset to first
-                    if(dotindex == dots.length-1)
-                      dots[0].active = true
-                    else
-                      dots[dotindex+1].active = true
-              )
-          )
-      )
-       
     ######################
     # Sync / subscriptions
     ######################
