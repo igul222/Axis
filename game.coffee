@@ -11,7 +11,7 @@ module.exports = class Game
       @state =
         id: uuid.v4()
         teams: [
-            active: false
+            active: true
             players: []
           ,
             active: false
@@ -59,8 +59,124 @@ module.exports = class Game
     # Start the game.
     start: ->
       @state.started = true
+      @generateDots()
+
+      console.log(_.sample(_.sample(@state.teams).players).dots)
+
+      @state.teams[0].active = true
+      @state.teams[0].players[0].active = true
+      @state.teams[0].players[0].dots[0].active = true
+
+      console.log(@state)
+      @advanceTurn(@state)
+      console.log(@state)
+
       @_updateAll()
 
+    #random xy coordinate within given rectangle (origin and size)
+    randomPointInRect: (x0, y0, width, height) ->
+      point =
+        x: Math.floor(Math.random()*width)+x0
+        y: Math.floor(Math.random()*height)+y0
+      point
+
+    # Generate random positions for beginning gameplay
+    generateDots:->
+      randomPointInRect = @randomPointInRect
+
+      #fixed width and height, but should come from state
+      height = 800
+      width = 800
+
+      _.each(@state.teams, (team, teamindex, teams) ->
+        #area of the graph, divided into rectangles of the same height
+        subdivheight = (height/team.players.length)
+        subdivwidth = (width/2)
+
+        _.each(team.players, 
+          (player, playerindex, players) ->
+            for dot in [0...Math.floor(6/team.players.length)]
+              player.dots.push(randomPointInRect(subdivwidth*teamindex, playerindex*subdivheight, subdivwidth, subdivheight))
+        )
+      )
+
+    isEmptyObject: (obj)->
+      for prop in obj
+        if (Object.prototype.hasOwnProperty.call(obj, prop))
+          false
+      true
+
+    advance: (list, index)->
+      list[index].active = false
+      if(index+1 >= list.length)
+        list[0].active = true
+        0
+      else
+        list[index+1].active = true
+        index+1
+
+    loopThroughArrayAtLevel: (list)->
+      advance = @advance
+      isEmptyObject = @isEmptyObject
+      _.each(list, (value, keyorindex, list)->
+        if(value.active)
+          newIndex = advance(list, keyorindex)
+          if(isEmptyObject(list[keyorindex]))
+            return null
+          @(list[newIndex])
+      )
+
+    advanceTurn:(state)->
+      @loopThroughArrayAtLevel(state.teams)
+    
+    advanceTurnOld:(state)->
+      #keep track of which states have been switched already, so that when one is switched, it can be broken out of
+      switchedStates = 
+        team: false
+        player: false
+        dot: false
+
+
+      #loop through teams, so long as teams haven't been switched yet, switch when the active one is found
+      _.each(state.teams, (team, teamindex, teams)->
+        if(!switchedStates.team)
+          if(team.active)
+            team.active = false
+            switchedStates.team = true
+            
+            #if the active team is the last team, then reset to first team
+            if(teamindex == teams.length-1) #parameters: index, list
+              state.teams[0].active = true
+            else
+              state.teams[teamindex+1].active = true
+          
+          _.each(team.players, (player, playerindex, players)->
+            if(!switchedStates.player)
+              if(player.active)
+                player.active = false
+                switchedStates.player = true
+
+                #if the active is last, then reset to first
+                if(playerindex == players.length-1)
+                  players[0].active = true
+                else
+                  players[playerindex+1].active = true
+
+              _.each(player.dots, (dot, dotindex, dots)->
+                if(!switchedStates.dot)
+                  if(dot.active)
+                    dot.active = false
+                    switchedStates.dot = true
+
+                    #if active is last, reset to first
+                    if(dotindex == dots.length-1)
+                      dots[0].active = true
+                    else
+                      dots[dotindex+1].active = true
+              )
+          )
+      )
+       
     ######################
     # Sync / subscriptions
     ######################

@@ -1,4 +1,7 @@
 .DS_Store
 node_modules
+public/app.js
+public/.app.js
+public/npm-debug.log
 public/compiled
 .env

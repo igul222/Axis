@@ -1,7 +1,10 @@
 React = require('react/addons')
 client = require('../client.coffee')
 
+
 Lobby = require('./lobby.cjsx')
+Gameplay = require("./gameplay.coffee")
+
 
 module.exports = React.createClass(
   componentDidMount: ->
@@ -16,5 +19,5 @@ module.exports = React.createClass(
     else if not this.props.data.game.started
       <Lobby data={this.props.data} />
     else
-      <div>Game on!</div>
+      <Gameplay data={this.props.data} />
 )
