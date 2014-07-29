@@ -3,7 +3,7 @@ client = require('../client.coffee')
 
 
 Lobby = require('./lobby.cjsx')
-Gameplay = require("./gameplay.coffee")
+Gameplay = require("./gameplay.cjsx")
 
 
 module.exports = React.createClass(
