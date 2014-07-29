@@ -1,8 +1,6 @@
 React = require('react/addons')
 Graph = require('./graph.cjsx')
 
-# {div} = React.DOM
-
 module.exports = React.createClass(
   getInitialState: ->
     t: 0

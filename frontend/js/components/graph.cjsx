@@ -1,8 +1,6 @@
 React = require('react/addons')
 _     = require('underscore')
 
-# {canvas, div} = React.DOM
-
 module.exports = React.createClass(
   componentDidMount: ->
     context = @getDOMNode().getContext("2d")
