@@ -6,8 +6,6 @@ module.exports = React.createClass(
     t: 0
     width: 800
     height: 800
-    equation: (x) ->
-      10 * Math.sin(x / 10)
 
   componentDidMount: ->
     requestAnimationFrame @tick
@@ -17,9 +15,9 @@ module.exports = React.createClass(
     requestAnimationFrame @tick
 
   render: ->
-    <Graph t={state.t} equations={[
+    <Graph t={state.t} functions={[
         {
-          equation: @state.equation
+          func: (x) -> 10 * Math.sin(x / 10)
           origin:
             x: -275
             y: 275
