@@ -4,14 +4,14 @@ client  = require('../client.coffee')
 
 module.exports = React.createClass(
   gameCanStart: ->
-    @props.data.game.teams[0].players.length > 0 && 
-    @props.data.game.teams[1].players.length > 0
+    @props.data.gameState.teams[0].players.length > 0 &&
+    @props.data.gameState.teams[1].players.length > 0
 
   startGame: ->
     client.start()
 
   render: ->
-    teams = @props.data.game.teams.map (team) -> team.players.map (player) ->
+    teams = @props.data.gameState.teams.map (team) -> team.players.map (player) ->
       <li key={player.id}>{player.name}</li>
 
     <div className="row">

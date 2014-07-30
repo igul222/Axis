@@ -9,7 +9,7 @@ class Client
     @game = null
     @data =
       playerName: '',
-      game: null
+      gameState: null
 
     @socket.on 'update', (gameState) =>
       if @game
@@ -18,7 +18,7 @@ class Client
         @game = new Game()
         @game.setState(gameState)
         @game.subscribe 'client', (state) =>
-          @data.game = state
+          @data.gameState = state
           @_update()
 
     @socket.on 'joinedPublic', (gameId) =>
