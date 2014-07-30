@@ -15,7 +15,7 @@ module.exports = React.createClass(
     requestAnimationFrame @tick
 
   render: ->
-    <Graph t={state.t} functions={[
+    <Graph t={@state.t} functions={[
         {
           func: (x) -> 10 * Math.sin(x / 10)
           origin:
@@ -23,7 +23,7 @@ module.exports = React.createClass(
             y: 275
         }
         {
-          equation: (x) ->
+          func: (x) ->
             0.4*x*Math.sin(x/2)
           
           origin:

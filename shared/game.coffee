@@ -62,7 +62,7 @@ module.exports = class Game
     # Start the game.
     start: ->
       @state.started = true
-      @generateDots()
+      @generateInitialPositions()
 
       console.log(_.sample(_.sample(@state.teams).players).dots)
 
