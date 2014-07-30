@@ -55,6 +55,9 @@ module.exports = class Game
       players = _.flatten(_.pluck(@state.teams, 'players'))
       _.find(players, (p) -> p.id == id)
 
+    getActiveDotForPlayer: (id)->
+      _.find(getPlayer(id).dots, (d) -> d.active)
+
     ##########
     # Gameplay
     ##########
