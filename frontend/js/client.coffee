@@ -12,7 +12,14 @@ class Client
       game: null
 
     @socket.on 'update', (gameState) =>
-      @game?.setState(gameState)
+      if @game
+        @game.setState(gameState)
+      else
+        @game = new Game()
+        @game.setState(gameState)
+        @game.subscribe 'client', (state) =>
+          @data.game = state
+          @_update()
 
     @socket.on 'joinedPublic', (gameId) =>
       page('/games/'+gameId)
@@ -25,14 +32,9 @@ class Client
     @socket.emit('joinPublic', @data.playerName)
 
   observe: (gameId) ->
-    @game = new Game()
-    @game.subscribe 'client', (state) =>
-      @data.game = state
-      @_update()
     @socket.emit('observe', gameId)
 
   leave: ->
-    @game = null
     @socket.emit('leave')
 
   start: ->

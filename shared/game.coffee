@@ -4,8 +4,8 @@ _ = require('underscore')
 uuid = require('uuid')
 
 module.exports = class Game
-    BOARD_WIDTH: 25
-    BOARD_HEIGHT: 15
+    BOARD_WIDTH: 50
+    BOARD_HEIGHT: 30
     DOTS_PER_PLAYER: 2
 
     constructor: ->
@@ -93,11 +93,16 @@ module.exports = class Game
       dots = []
 
       for team, teamIndex in @state.teams
-        hOffset = teamIndex * @BOARD_WIDTH / 2
+        hOffset = (teamIndex-1) * (@BOARD_WIDTH/2)
         for player in team.players
           for i in [1..@DOTS_PER_PLAYER]
             until dot? && dots.every((d)-> dist(dot,d) > 4)
-              dot = randomPoint(hOffset, 0, @BOARD_WIDTH / 2, @BOARD_HEIGHT)
+              dot = randomPoint(
+                hOffset, 
+                -@BOARD_HEIGHT/2, 
+                @BOARD_WIDTH/2, 
+                @BOARD_HEIGHT
+              )
             dots.push(dot)
             player.dots.push(dot)
 

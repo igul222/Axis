@@ -1,11 +1,10 @@
 React = require('react/addons')
 Graph = require('./graph.cjsx')
+Game = require('../../../shared/game.coffee')
 
 module.exports = React.createClass(
   getInitialState: ->
     t: 0
-    width: 800
-    height: 800
 
   componentDidMount: ->
     requestAnimationFrame @tick
@@ -15,22 +14,25 @@ module.exports = React.createClass(
     requestAnimationFrame @tick
 
   render: ->
-    <Graph t={@state.t} functions={[
+    <Graph
+      t={@state.t}
+      functions={[
         {
-          func: (x) -> 10 * Math.sin(x / 10)
+          func: (x) -> Math.sin(x)
           origin:
-            x: -275
-            y: 275
+            x: 0
+            y: 0
         }
         {
-          func: (x) ->
-            0.4*x*Math.sin(x/2)
-          
+          func: (x) -> 10
           origin:
-            x: -275
-            y: 15
+            x: 0
+            y: -5
         }
       ]}
-      width = {@state.width}
-      height = {@state.height} />
+      width={800}
+      height={480}
+      xrange={Game::BOARD_WIDTH}
+      yrange={Game::BOARD_HEIGHT}
+      />
 )

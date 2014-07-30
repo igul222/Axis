@@ -1,9 +1,9 @@
 React = require('react/addons')
 
 module.exports = React.createClass(
-  AXIS_COLOR: 'rgb(255,255,255)'
+  AXIS_COLOR: 'rgb(0,0,0)'
   FUNCTION_COLOR: 'rgb(11,125,150)'
-  FUNCTION_THICKNESS: 3 # 3px
+  FUNCTION_THICKNESS: 1 # 3px
 
   componentDidMount: ->
     context = @getDOMNode().getContext("2d")
@@ -24,7 +24,7 @@ module.exports = React.createClass(
     context.strokeStyle = @AXIS_COLOR
     context.moveTo(0, y0) # x axis
     context.lineTo(@props.width, y0)
-    context.moveTo(x0, x0) # y axis
+    context.moveTo(x0, 0) # y axis
     context.lineTo(x0, @props.height)
     context.stroke()
 
@@ -42,24 +42,28 @@ module.exports = React.createClass(
   drawFunction: (params) ->
     {context, func, t, color, thickness} = params
 
-    # Define start/end points and step interval
-    dx = 4
-    x0 = Math.round(func.origin.x)
-    xMax = Math.round((@props.width - func.origin.x) * t)
+    # Convert graph coordinates to canvas coordinates
+    g2c = (x,y) =>
+      [
+        (x + @props.xrange / 2) * (@props.width / @props.xrange),
+        @props.height - ((y + @props.yrange / 2) * (@props.height / @props.yrange)),
+      ]
 
-    absoluteOrigin =
-      x: (@props.width / 2) + func.origin.x
-      y: (@props.height / 2) - func.origin.y
-    
+    # Define start/end points and step interval
+    dx = (@props.xrange / @props.width)
+    x0 = func.origin.x
+    xMax = x0 + t*(@props.xrange/2 - func.origin.x)
+
     context.beginPath()
     context.lineWidth = thickness
     context.strokeStyle = color
 
-    context.moveTo(absoluteOrigin.x + x0, absoluteOrigin.y + func.func(x0))
+    context.moveTo(g2c(func.origin.x, func.origin.y)...)
 
+    yTranslate = func.origin.y - func.func(x0)
     for x in [x0..xMax] by dx
-      y = func.func(x)
-      context.lineTo(absoluteOrigin.x + x, absoluteOrigin.y + y)
+      y = func.func(x) + yTranslate
+      context.lineTo(g2c(x, y)...)
 
     context.stroke()
 
