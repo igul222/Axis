@@ -3,7 +3,10 @@ React = require('react/addons')
 module.exports = React.createClass(
   AXIS_COLOR: 'rgb(0,0,0)'
   FUNCTION_COLOR: 'rgb(11,125,150)'
-  FUNCTION_THICKNESS: 1 # px
+  FUNCTION_THICKNESS: 1 # 3px
+  DOT_COLOR: 'rgb(150,0,0)'
+  DOT_RADIUS: 10 # 10 px
+  DOT_THICKNESS: 3 # 3 px
 
   componentDidMount: ->
     context = @getDOMNode().getContext("2d")
@@ -28,12 +31,36 @@ module.exports = React.createClass(
     context.lineTo(x0, @props.height)
     context.stroke()
 
-    for fn in @props.functions
-      @drawFunction(context, fn)
+    #draw all dots, and their functions
+    for team in @props.game_state.teams
+      for player in team.players
+        for dot in player.dots
+          @drawDot(
+            context: context
+            dot: dot
+            color: @DOT_COLOR
+            radius: @DOT_RADIUS
+            thickness: @DOT_THICKNESS
+          )
+          for fn in dot.functions
+            @drawFunction(
+              context: context
+              func: fn
+              t: @props.t
+              color: @FUNCTION_COLOR
+              thickness: @FUNCTION_THICKNESS
+            )  
 
     context.restore()
  
-  drawFunction: (context, func) ->
+  drawDot: (params) ->
+    {context, dot, color, radius, thickness} = params
+    context.beginPath()
+    context.arc(dot.x, dot.y, radius, 0, 2*Math.PI)
+    context.stroke()
+
+  drawFunction: (params) ->
+    {context, func, t, color, thickness} = params
     # Convert graph coordinates to canvas coordinates
     g2c = (x,y) =>
       [

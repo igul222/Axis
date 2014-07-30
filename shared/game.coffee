@@ -121,6 +121,16 @@ module.exports = class Game
             break
       recursivelyAdvance(@state.teams)
 
+    #attempt to make a move as the player, validate
+    moveAsPlayer: (id, move)->
+      if validateMoveAsPlayer(id, move)
+        getActiveDotForPlayer(id).push(move)
+
+    #validate whether the player is active and can make the proposed move
+    validateMoveAsPlayer: (id, move) ->
+      player = getPlayer(id)
+      player.active && player.team.active
+
     ######################
     # Sync / subscriptions
     ######################
