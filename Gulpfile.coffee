@@ -16,10 +16,10 @@ path            = require('path')
 
 compileJS = (production) ->
   gutil.log 'Compiling js (production: '+production+')'
-  bundleStream = browserify(debug: !production)
+  bundleStream = browserify()
     .add('./frontend/js/app.cjsx')
     .transform(coffeeReactify)
-    .bundle()
+    .bundle(debug: !production)
     .on 'error', (err) ->
       gutil.log 'Error compiling js!'
       gutil.log err
