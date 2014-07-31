@@ -55,6 +55,9 @@ module.exports = class Game
       players = _.flatten(_.pluck(@state.teams, 'players'))
       _.find(players, (p) -> p.id == id)
 
+    getActiveDotForPlayer: (id)->
+      _.find(getPlayer(id).dots, (d) -> d.active)
+
     ##########
     # Gameplay
     ##########
@@ -64,16 +67,11 @@ module.exports = class Game
       @state.started = true
       @generateInitialPositions()
 
-      console.log(_.sample(_.sample(@state.teams).players).dots)
-
       @state.teams[0].active = true
       @state.teams[0].players[0].active = true
       @state.teams[0].players[0].dots[0].active = true
 
-      console.log(@state)
       @advanceTurn(@state)
-      console.log(@state)
-
       @_updateAll()
 
     # Populate players with randomly positioned dots
@@ -103,6 +101,8 @@ module.exports = class Game
                 @BOARD_WIDTH/2, 
                 @BOARD_HEIGHT
               )
+            dot.functions = []
+            dot.active = false
             dots.push(dot)
             player.dots.push(dot)
 
@@ -117,6 +117,16 @@ module.exports = class Game
             recursivelyAdvance(item.players || item.dots || null)
             break
       recursivelyAdvance(@state.teams)
+
+    #attempt to make a move as the player, validate
+    moveAsPlayer: (id, move)->
+      if validateMoveAsPlayer(id, move)
+        getActiveDotForPlayer(id).push(move)
+
+    #validate whether the player is active and can make the proposed move
+    validateMoveAsPlayer: (id, move) ->
+      player = getPlayer(id)
+      player.active && player.team.active
 
     ######################
     # Sync / subscriptions

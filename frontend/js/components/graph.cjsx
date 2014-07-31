@@ -3,7 +3,10 @@ React = require('react/addons')
 module.exports = React.createClass(
   AXIS_COLOR: 'rgb(0,0,0)'
   FUNCTION_COLOR: 'rgb(11,125,150)'
-  FUNCTION_THICKNESS: 1 # px
+  FUNCTION_THICKNESS: 1 # 3px
+  DOT_COLOR: 'rgb(150,0,0)'
+  DOT_RADIUS: 10 # 10 px
+  DOT_THICKNESS: 3 # 3 px
 
   componentDidMount: ->
     context = @getDOMNode().getContext("2d")
@@ -28,33 +31,46 @@ module.exports = React.createClass(
     context.lineTo(x0, @props.height)
     context.stroke()
 
-    for fn in @props.functions
-      @drawFunction(context, fn)
+    #draw all dots, and their functions
+    for team in @props.gameState.teams
+      for player in team.players
+        for dot in player.dots
+          for fn in dot.functions
+            @drawFunctionFromDot(context, fn, dot)
+          @drawDot(context, dot)
 
     context.restore()
  
-  drawFunction: (context, func) ->
-    # Convert graph coordinates to canvas coordinates
-    g2c = (x,y) =>
-      [
-        (x + @props.xrange / 2) * (@props.width / @props.xrange),
-        (@props.height / 2) - @props.height*y/@props.yrange,
-      ]
+  # Convert graph coordinates to canvas coordinates
+  _g2c: (x,y) ->
+    [
+      (x + @props.xrange / 2) * (@props.width / @props.xrange),
+      (@props.height / 2) - @props.height*y/@props.yrange,
+    ]
+
+  drawDot: (context, dot) ->
+    context.beginPath()
+    context.arc(@_g2c(dot.x, dot.y)..., @DOT_RADIUS, 0, 2*Math.PI)
+    context.lineWidth = @DOT_THICKNESS
+    context.strokeStyle = @DOT_COLOR
+    context.stroke()
+
+  drawFunctionFromDot: (context, func, dot) ->
     # Define start/end points and step interval
     dx = (@props.xrange / @props.width)*0.01
-    x0 = func.origin.x
-    xMax = x0 + func.t*(@props.xrange/2 - func.origin.x)
+    x0 = dot.x
+    xMax = x0 + func.t*(@props.xrange/2 - dot.x)
 
     context.beginPath()
     context.lineWidth = @FUNCTION_THICKNESS
     context.strokeStyle = @FUNCTION_COLOR
 
-    context.moveTo(g2c(func.origin.x, func.origin.y)...)
+    context.moveTo(@_g2c(dot.x, dot.y)...)
 
-    yTranslate = func.origin.y - func.func(x0)
+    yTranslate = dot.y - func.func(x0)
     for x in [x0..xMax] by dx
       y = func.func(x) + yTranslate
-      context.lineTo(g2c(x, y)...)
+      context.lineTo(@_g2c(x, y)...)
 
     context.stroke()
 
