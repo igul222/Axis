@@ -37,5 +37,5 @@ module.exports = React.createClass(
       height={480}
       xrange={Game::BOARD_WIDTH}
       yrange={Game::BOARD_HEIGHT}
-      />
+    />
 )

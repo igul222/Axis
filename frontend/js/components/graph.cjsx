@@ -45,6 +45,7 @@ module.exports = React.createClass(
           for fn in dot.functions
             @drawFunction(
               context: context
+              dot: dot
               func: fn
               t: @props.t
               color: @FUNCTION_COLOR
@@ -55,12 +56,22 @@ module.exports = React.createClass(
  
   drawDot: (params) ->
     {context, dot, color, radius, thickness} = params
+
+    g2c = (x,y) =>
+      [
+        (x + @props.xrange / 2) * (@props.width / @props.xrange),
+        @props.height - ((y + @props.yrange / 2) * (@props.height / @props.yrange)),
+      ]
+
     context.beginPath()
-    context.arc(dot.x, dot.y, radius, 0, 2*Math.PI)
+    context.arc(g2c(dot.x, dot.y)..., radius, 0, 2*Math.PI)
+    context.lineWidth = thickness
+    context.strokeStyle = color
     context.stroke()
 
   drawFunction: (params) ->
-    {context, func, t, color, thickness} = params
+    {context, dot, func, t, color, thickness} = params
+
     # Convert graph coordinates to canvas coordinates
     g2c = (x,y) =>
       [
@@ -69,16 +80,16 @@ module.exports = React.createClass(
       ]
     # Define start/end points and step interval
     dx = (@props.xrange / @props.width)*0.01
-    x0 = func.origin.x
+    x0 = dot.x
     xMax = x0 + func.t*(@props.xrange/2 - func.origin.x)
 
     context.beginPath()
     context.lineWidth = @FUNCTION_THICKNESS
     context.strokeStyle = @FUNCTION_COLOR
 
-    context.moveTo(g2c(func.origin.x, func.origin.y)...)
+    context.moveTo(g2c(dot.x, dot.y)...)
 
-    yTranslate = func.origin.y - func.func(x0)
+    yTranslate = dot.y - func.func(x0)
     for x in [x0..xMax] by dx
       y = func.func(x) + yTranslate
       context.lineTo(g2c(x, y)...)

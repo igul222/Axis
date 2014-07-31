@@ -106,6 +106,7 @@ module.exports = class Game
                 @BOARD_WIDTH/2, 
                 @BOARD_HEIGHT
               )
+            dot.functions = []
             dots.push(dot)
             player.dots.push(dot)
 
