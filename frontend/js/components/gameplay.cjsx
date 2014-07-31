@@ -15,19 +15,20 @@ module.exports = React.createClass(
 
   render: ->
     <Graph
-      t={@state.t}
       functions={[
         {
           func: (x) -> Math.sin(x)
           origin:
             x: 0
             y: 0
+          t: @state.t
         }
         {
-          func: (x) -> 10
+          func: (x) -> 10*Math.sin(10*x)
           origin:
             x: 0
             y: -5
+          t: @state.t
         }
       ]}
       width={800}

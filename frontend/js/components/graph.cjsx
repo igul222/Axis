@@ -3,7 +3,7 @@ React = require('react/addons')
 module.exports = React.createClass(
   AXIS_COLOR: 'rgb(0,0,0)'
   FUNCTION_COLOR: 'rgb(11,125,150)'
-  FUNCTION_THICKNESS: 1 # 3px
+  FUNCTION_THICKNESS: 1 # px
 
   componentDidMount: ->
     context = @getDOMNode().getContext("2d")
@@ -29,34 +29,25 @@ module.exports = React.createClass(
     context.stroke()
 
     for fn in @props.functions
-      @drawFunction(
-        context: context
-        func: fn
-        t: @props.t
-        color: @FUNCTION_COLOR
-        thickness: @FUNCTION_THICKNESS
-      )
+      @drawFunction(context, fn)
 
     context.restore()
  
-  drawFunction: (params) ->
-    {context, func, t, color, thickness} = params
-
+  drawFunction: (context, func) ->
     # Convert graph coordinates to canvas coordinates
     g2c = (x,y) =>
       [
         (x + @props.xrange / 2) * (@props.width / @props.xrange),
-        @props.height - ((y + @props.yrange / 2) * (@props.height / @props.yrange)),
+        (@props.height / 2) - @props.height*y/@props.yrange,
       ]
-
     # Define start/end points and step interval
-    dx = (@props.xrange / @props.width)
+    dx = (@props.xrange / @props.width)*0.01
     x0 = func.origin.x
-    xMax = x0 + t*(@props.xrange/2 - func.origin.x)
+    xMax = x0 + func.t*(@props.xrange/2 - func.origin.x)
 
     context.beginPath()
-    context.lineWidth = thickness
-    context.strokeStyle = color
+    context.lineWidth = @FUNCTION_THICKNESS
+    context.strokeStyle = @FUNCTION_COLOR
 
     context.moveTo(g2c(func.origin.x, func.origin.y)...)
 
