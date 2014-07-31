@@ -16,7 +16,7 @@ module.exports = React.createClass(
   render: ->
     <Graph
       t={@state.t}
-      game_state = {@props.data.game}
+      game_state = {@props.data.gameState}
       functions={[
         {
           func: (x) -> Math.sin(x)
