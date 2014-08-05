@@ -41,6 +41,9 @@ class Client
   start: ->
     @socket.emit('start')
 
+  pushMove: (move) ->
+    @socket.emit('pushMove', move)
+
   subscribe: (callback) ->
     @callback = callback
     @_update()

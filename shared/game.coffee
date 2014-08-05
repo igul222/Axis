@@ -24,16 +24,14 @@ module.exports = class Game
       @data.moves.push(move)
       @_dataUpdateAll()
 
-    addPlayer: (id, name) ->
-      @pushMove(null, {type: 'addPlayer', id: id, name: name})
+    @addPlayer: (id, name) ->
+      return {type: 'addPlayer', id: id, name: name}
 
-    removePlayer: (id) ->
-      @pushMove(null, {type: 'removePlayer', id: id}) 
+    @removePlayer: (id) ->
+      return {type: 'removePlayer', id: id}
 
-    start: (id) ->
-      console.log('start: '+id)
-      @pushMove(id, {type: 'start'})
-      console.log('moves now '+JSON.stringify(@data,null,4))
+    @start: (agentId)->
+      return {agentId: agentId, type: 'start'}
 
     generateState: ->
       state =
@@ -60,7 +58,7 @@ module.exports = class Game
 
     # Add a player (with given id and name) to the team with fewer players.
     _addPlayer: (state, move) ->
-      return if state.started
+      return if state.started or move.playerId?
 
       if state.teams[0].players.length <= state.teams[1].players.length
         team = state.teams[0]
@@ -76,6 +74,7 @@ module.exports = class Game
 
     # Remove the player with the given id from the game if he exists.
     _removePlayer: (state, move) ->
+      return unless move.playerId == move.id
       for team in state.teams
         team.players = _.reject(team.players, (p) -> p.id == move.id)
 
@@ -93,7 +92,7 @@ module.exports = class Game
 
     # Start the game.
     _start: (state, move) ->
-      return unless @_getPlayer(state, move.playerId) and !state.started
+      return unless move.agentId? and @_getPlayer(state, move.agentId) and !state.started
 
       state.started = true
       @_generateInitialPositions(state)
