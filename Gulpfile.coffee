@@ -68,7 +68,7 @@ gulp.task 'default', ->
   ).on 'restart', -> setTimeout ->
     gutil.log 'Live-reloading (Express restarted)'
     lr.changed(body: {files: ['/']})
-  , 500
+  , 1000
 
   gulp.watch ['./frontend/css/**/*'], (evt) ->
     compileCSS(false)

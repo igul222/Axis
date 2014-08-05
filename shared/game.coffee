@@ -2,6 +2,7 @@
 
 _ = require('underscore')
 uuid = require('uuid')
+seed = require('seed-random')
 
 module.exports = class Game
     BOARD_WIDTH: 50
@@ -11,8 +12,31 @@ module.exports = class Game
     constructor: ->
       @subscriberIds = []
       @subscriberCallbacks = {}
-      @state =
-        id: uuid.v4()
+      @stateAnimation = null
+      @data =
+        rand: Math.random()
+        t0: Date.now()
+        moves: []
+
+    pushMove: (playerId, move) ->
+      move.t = Date.now()
+      move.playerId = playerId
+      @data.moves.push(move)
+      @_dataUpdateAll()
+
+    addPlayer: (id, name) ->
+      @pushMove(null, {type: 'addPlayer', id: id, name: name})
+
+    removePlayer: (id) ->
+      @pushMove(null, {type: 'removePlayer', id: id}) 
+
+    start: (id) ->
+      console.log('start: '+id)
+      @pushMove(id, {type: 'start'})
+      console.log('moves now '+JSON.stringify(@data,null,4))
+
+    generateState: ->
+      state =
         teams: [
             active: true
             players: []
@@ -22,64 +46,69 @@ module.exports = class Game
         ]
         started: false
 
+      for move in @data.moves
+        switch move.type
+          when 'addPlayer'    then @_addPlayer(state, move)
+          when 'removePlayer' then @_removePlayer(state, move)
+          when 'start'        then @_start(state, move)
+
+      return state
+
     #########
     # Players
     #########
 
     # Add a player (with given id and name) to the team with fewer players.
-    addPlayer: (id, name) ->
-      return if @started
+    _addPlayer: (state, move) ->
+      return if state.started
 
-      if @state.teams[0].players.length <= @state.teams[1].players.length
-        team = @state.teams[0]
+      if state.teams[0].players.length <= state.teams[1].players.length
+        team = state.teams[0]
       else
-        team = @state.teams[1]
+        team = state.teams[1]
 
       team.players.push {
-        id: id,
-        name: name,
+        id: move.id,
+        name: move.name,
         active: false
         dots: []
       }
 
-      @_updateAll()
-
     # Remove the player with the given id from the game if he exists.
-    removePlayer: (id) ->
-      for team in @state.teams
-        team.players = _.reject(team.players, (p) -> p.id == id)
-      @_updateAll()
+    _removePlayer: (state, move) ->
+      for team in state.teams
+        team.players = _.reject(team.players, (p) -> p.id == move.id)
 
     # Return the player with the given id, or undefined if none exists.
-    getPlayer: (id) ->
-      players = _.flatten(_.pluck(@state.teams, 'players'))
+    _getPlayer: (state, id) ->
+      players = _.flatten(_.pluck(state.teams, 'players'))
       _.find(players, (p) -> p.id == id)
 
-    getActiveDotForPlayer: (id)->
-      _.find(getPlayer(id).dots, (d) -> d.active)
+    # getActiveDotForPlayer: (id)->
+    #   _.find(getPlayer(id).dots, (d) -> d.active)
 
     ##########
     # Gameplay
     ##########
 
     # Start the game.
-    start: ->
-      @state.started = true
-      @generateInitialPositions()
+    _start: (state, move) ->
+      return unless @_getPlayer(state, move.playerId) and !state.started
 
-      @state.teams[0].active = true
-      @state.teams[0].players[0].active = true
-      @state.teams[0].players[0].dots[0].active = true
+      state.started = true
+      @_generateInitialPositions(state)
 
-      @advanceTurn(@state)
-      @_updateAll()
+      state.teams[0].active = true
+      state.teams[0].players[0].active = true
+      state.teams[0].players[0].dots[0].active = true
 
     # Populate players with randomly positioned dots
-    generateInitialPositions: ->
+    _generateInitialPositions: (state) ->
+      rand = seed(@data.rand)
 
       randomPoint = (x0, y0, width, height) ->
-        x: Math.floor(Math.random() * width) + x0
-        y: Math.floor(Math.random() * height) + y0
+        x: Math.floor(rand() * width) + x0
+        y: Math.floor(rand() * height) + y0
 
       dist = (point1, point2) ->
         Math.sqrt(
@@ -90,7 +119,7 @@ module.exports = class Game
       # Keep track of generated dots to avoid generating two nearby dots
       dots = []
 
-      for team, teamIndex in @state.teams
+      for team, teamIndex in state.teams
         hOffset = (teamIndex-1) * (@BOARD_WIDTH/2)
         for player in team.players
           for i in [1..@DOTS_PER_PLAYER]
@@ -106,57 +135,68 @@ module.exports = class Game
             dots.push(dot)
             player.dots.push(dot)
 
-    # Advance the game by one turn, updating team/player/dot active values
-    advanceTurn: ->
-      recursivelyAdvance = (ary) ->
-        return unless ary?
-        for item,i in ary
-          if item.active
-            item.active = false
-            ary[(i+1) % ary.length].active = true
-            recursivelyAdvance(item.players || item.dots || null)
-            break
-      recursivelyAdvance(@state.teams)
+    # # Advance the game by one turn, updating team/player/dot active values
+    # advanceTurn: ->
+    #   recursivelyAdvance = (ary) ->
+    #     return unless ary?
+    #     for item,i in ary
+    #       if item.active
+    #         item.active = false
+    #         ary[(i+1) % ary.length].active = true
+    #         recursivelyAdvance(item.players || item.dots || null)
+    #         break
+    #   recursivelyAdvance(@state.teams)
 
-    #attempt to make a move as the player, validate
-    moveAsPlayer: (id, move)->
-      if validateMoveAsPlayer(id, move)
-        getActiveDotForPlayer(id).push(move)
+    # #attempt to make a move as the player, validate
+    # moveAsPlayer: (id, move)->
+    #   if validateMoveAsPlayer(id, move)
+    #     getActiveDotForPlayer(id).push(move)
 
-    #validate whether the player is active and can make the proposed move
-    validateMoveAsPlayer: (id, move) ->
-      player = getPlayer(id)
-      player.active && player.team.active
+    # #validate whether the player is active and can make the proposed move
+    # validateMoveAsPlayer: (id, move) ->
+    #   player = getPlayer(id)
+    #   player.active && player.team.active
 
     ######################
     # Sync / subscriptions
     ######################
 
-    # Force-update the game state to the given state. Use this to synchronize
+    # Update the game data. Use this to synchronize
     # with another Game object.
-    setState: (newState) ->
-      @state = newState
-      @_updateAll()
+    setData: (newData) ->
+      @data = newData
 
-    # Call the given callback whenever the game state changes, passing the
-    # new game state as an argument. Accepts an id which you can pass to
+    # Call the given callback whenever the game data changes, passing the
+    # new game data as an argument. Accepts an id which you can pass to
     # unsubscribe if you want to stop the callbacks.
-    subscribe: (id, callback) ->
+    dataSubscribe: (id, callback) ->
       return if _.contains(@subscriberIds, id)
       @subscriberIds.push(id)
       @subscriberCallbacks[id] = callback
-      @_update(id)
+      @_dataUpdate(id)
 
     # Stop calling the callback passed to subscribe with the given id.
-    unsubscribe: (id) ->
+    dataUnsubscribe: (id) ->
       @subscriberIds = _.without(@subscriberIds, id)
       delete @subscriberCallbacks[id] if @subscriberCallbacks[id]
 
     # Fire all the subscribed callbacks.
-    _updateAll: ->
+    _dataUpdateAll: ->
       for id in @subscriberIds
-        @_update(id)
+        @_dataUpdate(id)
 
     # Fire the subscribed callback with the given id only.
-    _update: (subscriberId) ->
-      @subscriberCallbacks[subscriberId](@state)
+    _dataUpdate: (subscriberId) ->
+      console.log('dataUpdate to '+subscriberId)
+      @subscriberCallbacks[subscriberId](@data)
+
+    # Subscribe to updates in the game state. Call this function with null
+    # to stop receiving callbacks.
+    stateSubscribe: (callback) ->
+      if callback
+        animate = =>
+          callback(@generateState())
+          requestAnimationFrame(animate)
+        @stateAnimation = requestAnimationFrame(animate)
+      else if @stateAnimation
+        cancelAnimationFrame(@stateAnimation)

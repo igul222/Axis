@@ -1,7 +1,7 @@
 React = require('react/addons')
 page  = require('page')
 
-client = require('./client.coffee')
+window.gameClient = require('./client.coffee')
 
 WelcomePage = require('./components/welcome_page.cjsx')
 GamePage    = require('./components/game_page.cjsx')
@@ -33,7 +33,7 @@ App = React.createClass(
 app = React.renderComponent(<App />, document.body)
 
 # Connect client
-client.subscribe (data) ->
+window.gameClient.subscribe (data) ->
   app.setProps({data})
 
 # Routing

@@ -1,39 +1,39 @@
 # The game's socket.io server
 
 Game = require('../shared/game.coffee')
+uuid = require('uuid')
 
 module.exports = (io) ->
   games = {}
-  openGame = new Game()
-  games[openGame.state.id] = openGame
+  openGame = uuid.v4()
+  games[openGame] = new Game()
 
   io.on 'connection', (socket) ->
     currentGame = null
 
     socket.on 'joinPublic', (name) ->
-      currentGame = openGame
+      currentGame = games[openGame]
       currentGame.addPlayer(socket.id, name)
-      socket.emit('joinedPublic', currentGame.state.id)
+      socket.emit('joinedPublic', openGame)
 
     socket.on 'observe', (gameId) ->
       currentGame = games[gameId]
-      currentGame?.subscribe socket.id, (state) ->
-        socket.emit('update', state)
+      currentGame?.dataSubscribe socket.id, (data) ->
+        socket.emit('data', data)
 
     socket.on 'start', ->
-      if currentGame?.getPlayer(socket.id)
-        currentGame.start()
+      currentGame?.start(socket.id)
 
-        if currentGame == openGame
-          openGame = new Game()
-          games[openGame.state.id] = openGame
+      if currentGame == games[openGame] and currentGame.generateState().started
+        openGame = uuid.v4()
+        games[openGame] = new Game()
 
     socket.on 'leave', ->
       if currentGame
         currentGame.removePlayer(socket.id)
-        currentGame.unsubscribe(socket.id)
+        currentGame.dataUnsubscribe(socket.id)
 
     socket.on 'disconnect', ->
       if currentGame
         currentGame.removePlayer(socket.id)
-        currentGame.unsubscribe(socket.id)
+        currentGame.dataUnsubscribe(socket.id)

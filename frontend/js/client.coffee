@@ -11,13 +11,14 @@ class Client
       playerName: '',
       gameState: null
 
-    @socket.on 'update', (gameState) =>
+    @socket.on 'data', (data) =>
+      console.log('update received: '+JSON.stringify(data,null,4))
       if @game
-        @game.setState(gameState)
+        @game.setData(data)
       else
         @game = new Game()
-        @game.setState(gameState)
-        @game.subscribe 'client', (state) =>
+        @game.setData(data)
+        @game.stateSubscribe (state) =>
           @data.gameState = state
           @_update()
 
