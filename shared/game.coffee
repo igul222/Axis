@@ -18,20 +18,34 @@ module.exports = class Game
         t0: Date.now()
         moves: []
 
-    pushMove: (playerId, move) ->
+    ##########################
+    # Moves / state generation
+    ##########################
+
+    pushMove: (agentId, move) ->
       move.t = Date.now()
-      move.playerId = playerId
+      move.agentId = agentId
       @data.moves.push(move)
       @_dataUpdateAll()
 
-    @addPlayer: (id, name) ->
-      return {type: 'addPlayer', id: id, name: name}
+    # Add a player (with given id and name) to the team with fewer players.
+    # Only the server can issue this move.
+    @addPlayer: (playerId, playerName) ->
+      return {type: 'addPlayer', playerId: playerId, playerName: playerName}
 
-    @removePlayer: (id) ->
-      return {type: 'removePlayer', id: id}
+    # Remove the player with the given id from the game if he exists.
+    # Players can only remove themselves.
+    @removePlayer: (playerId) ->
+      return {type: 'removePlayer', playerId: playerId}
 
+    # Start the game on behalf of the player with the given id.
+    # Only the server can issue this request, and only on behalf of a player
+    # in the game. The game must not already have been started.
     @start: (agentId)->
-      return {agentId: agentId, type: 'start'}
+      return {type: 'start', agentId: agentId}
+
+    @fire: (fn) ->
+      return {type: 'fire', fn: fn}
 
     generateState: ->
       state =
@@ -56,9 +70,8 @@ module.exports = class Game
     # Players
     #########
 
-    # Add a player (with given id and name) to the team with fewer players.
     _addPlayer: (state, move) ->
-      return if state.started or move.playerId?
+      return if state.started or move.agentId?
 
       if state.teams[0].players.length <= state.teams[1].players.length
         team = state.teams[0]
@@ -72,9 +85,8 @@ module.exports = class Game
         dots: []
       }
 
-    # Remove the player with the given id from the game if he exists.
     _removePlayer: (state, move) ->
-      return unless move.playerId == move.id
+      return unless move.agentId == move.playerId
       for team in state.teams
         team.players = _.reject(team.players, (p) -> p.id == move.id)
 
@@ -83,14 +95,10 @@ module.exports = class Game
       players = _.flatten(_.pluck(state.teams, 'players'))
       _.find(players, (p) -> p.id == id)
 
-    # getActiveDotForPlayer: (id)->
-    #   _.find(getPlayer(id).dots, (d) -> d.active)
-
     ##########
     # Gameplay
     ##########
 
-    # Start the game.
     _start: (state, move) ->
       return unless move.agentId? and @_getPlayer(state, move.agentId) and !state.started
 
