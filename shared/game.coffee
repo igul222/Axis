@@ -41,8 +41,8 @@ module.exports = class Game
     # Start the game on behalf of the player with the given id.
     # Only the server can issue this request, and only on behalf of a player
     # in the game. The game must not already have been started.
-    @start: (agentId)->
-      return {type: 'start', agentId: agentId}
+    @start: (playerId)->
+      return {type: 'start', playerId: playerId}
 
     @fire: (fn) ->
       return {type: 'fire', fn: fn}
@@ -100,7 +100,9 @@ module.exports = class Game
     ##########
 
     _start: (state, move) ->
-      return unless move.agentId? and @_getPlayer(state, move.agentId) and !state.started
+      return if move.agentId? or 
+                !@_getPlayer(state, move.playerId) or 
+                state.started
 
       state.started = true
       @_generateInitialPositions(state)
