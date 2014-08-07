@@ -24,7 +24,7 @@ module.exports = (io) ->
     socket.on 'start', ->
       currentGame?.pushMove(null, Game.start(socket.id))
 
-      if currentGame == games[openGame] and currentGame.generateState().started
+      if currentGame == games[openGame] and currentGame.generateStateAtTime(Date.now()).started
         openGame = uuid.v4()
         games[openGame] = new Game()
 

@@ -64,23 +64,20 @@ module.exports = class Game
       ]
       started: false
 
-    generateState: ->
-      @generateStateAtTime(@data.now)
-
     generateStateAtTime: (t) ->
       @state or= @blankState()
       
       state = if t >= @state.t then deepcopy(@state) else @blankState()
- 
+
       cacheState = true
       for move in @data.moves
         continue if move.t <= state.t
         break if move.t > t
         switch move.type
-          when 'addPlayer'    then cacheState and= @_addPlayer(state, move)
-          when 'removePlayer' then cacheState and= @_removePlayer(state, move)
-          when 'start'        then cacheState and= @_start(state, move)
-          when 'fire'         then cacheState and= @_fire(state, move, t)
+          when 'addPlayer'    then cacheState = @_addPlayer(state, move) and cacheState
+          when 'removePlayer' then cacheState = @_removePlayer(state, move) and cacheState
+          when 'start'        then cacheState = @_start(state, move) and cacheState
+          when 'fire'         then cacheState = @_fire(state, move, t) and cacheState
 
       state.t = t
       @state = state if cacheState
