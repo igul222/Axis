@@ -33,10 +33,10 @@ module.exports = (io) ->
 
     socket.on 'leave', ->
       if currentGame
-        currentGame.pushMove(socket.id, Game.removePlayer(socket.id))
         currentGame.dataUnsubscribe(socket.id)
+        currentGame.pushMove(socket.id, Game.removePlayer(socket.id))
 
     socket.on 'disconnect', ->
       if currentGame
-        currentGame.pushMove(socket.id, Game.removePlayer(socket.id))
         currentGame.dataUnsubscribe(socket.id)
+        currentGame.pushMove(socket.id, Game.removePlayer(socket.id))

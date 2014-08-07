@@ -3,6 +3,8 @@
 _ = require('underscore')
 uuid = require('uuid')
 seed = require('seed-random')
+math = require('mathjs')
+deepcopy = require('deepcopy')
 
 module.exports = class Game
     BOARD_WIDTH: 50
@@ -12,10 +14,12 @@ module.exports = class Game
     constructor: ->
       @subscriberIds = []
       @subscriberCallbacks = {}
-      @stateAnimation = null
+      @lastFrameTime = null
+      @animationRequestID = null
+      @state = null
       @data =
+        now: Date.now()
         rand: Math.random()
-        t0: Date.now()
         moves: []
 
     ##########################
@@ -39,31 +43,47 @@ module.exports = class Game
       return {type: 'removePlayer', playerId: playerId}
 
     # Start the game on behalf of the player with the given id.
-    # Only the server can issue this request, and only on behalf of a player
+    # Only the server can issue this move, and only on behalf of a player
     # in the game. The game must not already have been started.
     @start: (playerId)->
       return {type: 'start', playerId: playerId}
 
-    @fire: (fn) ->
-      return {type: 'fire', fn: fn}
+    # Fire the given function from the currently active dot. Only the currently
+    # active player can issue this move.
+    @fire: (expression) ->
+      return {type: 'fire', expression: expression}
+
+    blankState: ->
+      t: 0
+      teams: [
+          active: true
+          players: []
+        ,
+          active: false
+          players: []
+      ]
+      started: false
 
     generateState: ->
-      state =
-        teams: [
-            active: true
-            players: []
-          ,
-            active: false
-            players: []
-        ]
-        started: false
+      @generateStateAtTime(@data.now)
 
+    generateStateAtTime: (t) ->
+      @state or= @blankState()
+      
+      state = if t >= @state.t then deepcopy(@state) else @blankState()
+ 
+      cacheState = true
       for move in @data.moves
+        continue if move.t <= state.t
+        break if move.t > t
         switch move.type
-          when 'addPlayer'    then @_addPlayer(state, move)
-          when 'removePlayer' then @_removePlayer(state, move)
-          when 'start'        then @_start(state, move)
+          when 'addPlayer'    then cacheState and= @_addPlayer(state, move)
+          when 'removePlayer' then cacheState and= @_removePlayer(state, move)
+          when 'start'        then cacheState and= @_start(state, move)
+          when 'fire'         then cacheState and= @_fire(state, move, t)
 
+      state.t = t
+      @state = state if cacheState
       return state
 
     #########
@@ -71,7 +91,7 @@ module.exports = class Game
     #########
 
     _addPlayer: (state, move) ->
-      return if state.started or move.agentId?
+      return true if state.started or move.agentId?
 
       if state.teams[0].players.length <= state.teams[1].players.length
         team = state.teams[0]
@@ -79,16 +99,19 @@ module.exports = class Game
         team = state.teams[1]
 
       team.players.push {
-        id: move.id,
-        name: move.name,
+        id: move.playerId,
+        name: move.playerName,
         active: false
         dots: []
       }
 
+      return true
+
     _removePlayer: (state, move) ->
-      return unless move.agentId == move.playerId
+      return true unless move.agentId == move.playerId
       for team in state.teams
         team.players = _.reject(team.players, (p) -> p.id == move.id)
+      return true
 
     # Return the player with the given id, or undefined if none exists.
     _getPlayer: (state, id) ->
@@ -100,9 +123,9 @@ module.exports = class Game
     ##########
 
     _start: (state, move) ->
-      return if move.agentId? or 
-                !@_getPlayer(state, move.playerId) or 
-                state.started
+      return true if move.agentId? or 
+                     !@_getPlayer(state, move.playerId) or 
+                     state.started
 
       state.started = true
       @_generateInitialPositions(state)
@@ -111,13 +134,15 @@ module.exports = class Game
       state.teams[0].players[0].active = true
       state.teams[0].players[0].dots[0].active = true
 
+      return true
+
     # Populate players with randomly positioned dots
     _generateInitialPositions: (state) ->
       rand = seed(@data.rand)
 
       randomPoint = (x0, y0, width, height) ->
-        x: Math.floor(rand() * width) + x0
-        y: Math.floor(rand() * height) + y0
+        x: (rand() * width) + x0
+        y: (rand() * height) + y0
 
       dist = (point1, point2) ->
         Math.sqrt(
@@ -166,14 +191,36 @@ module.exports = class Game
     #   player = getPlayer(id)
     #   player.active && player.team.active
 
+    # Get the active team, player, and dot.
+    _getActive: (state) ->
+      team = _.find(state.teams, (x) -> x.active)
+      player = _.find(team.players, (x) -> x.active)
+      dot = _.find(player.dots, (x) -> x.active)
+      {team, player, dot}
+
+    _fire: (state, move, time) ->
+      active = @_getActive(state)
+      return true unless move.agentId == active.player.id
+
+      compiledFunction = math.compile(move.expression)
+      progress = (time - move.t)/10000 # 10 second animation time
+      state.fn = {
+        evaluate: (x) -> compiledFunction.eval(x: x)
+        origin: active.dot,
+        xMax: active.dot.x + progress*((@BOARD_WIDTH/2)-active.dot.x)
+      }
+
+      return progress >= 1
+
     ######################
     # Sync / subscriptions
     ######################
 
     # Update the game data. Use this to synchronize
     # with another Game object.
-    setData: (newData) ->
+    replaceData: (newData) ->
       @data = newData
+      @gameTime = @data.currentTime
 
     # Call the given callback whenever the game data changes, passing the
     # new game data as an argument. Accepts an id which you can pass to
@@ -196,16 +243,18 @@ module.exports = class Game
 
     # Fire the subscribed callback with the given id only.
     _dataUpdate: (subscriberId) ->
-      console.log('dataUpdate to '+subscriberId)
+      _.extend(@data, currentTime: Date.now())
       @subscriberCallbacks[subscriberId](@data)
 
-    # Subscribe to updates in the game state. Call this function with null
-    # to stop receiving callbacks.
-    stateSubscribe: (callback) ->
-      if callback
-        animate = =>
-          callback(@generateState())
-          requestAnimationFrame(animate)
-        @stateAnimation = requestAnimationFrame(animate)
-      else if @stateAnimation
-        cancelAnimationFrame(@stateAnimation)
+    # Start animating, calling callback with a game state object every frame.
+    startAnimating: (callback) ->
+      animate = (t) =>
+        @data.now += (t - @lastFrameTime)
+        @lastFrameTime = t
+        callback(@generateStateAtTime(@gameTime))
+        @animationRequestID = requestAnimationFrame(animate)
+      @animationRequestID = requestAnimationFrame(animate)
+
+    stopAnimating: ->
+      cancelAnimationFrame(@animationRequestID)
+      @animationRequestID = null

@@ -11,32 +11,35 @@ class Client
       playerName: '',
       gameState: null
 
-    @socket.on 'data', (data) =>
-      console.log('update received: '+JSON.stringify(data,null,4))
-      if @game
-        @game.setData(data)
-      else
-        @game = new Game()
-        @game.setData(data)
-        @game.stateSubscribe (state) =>
-          @data.gameState = state
-          @_update()
-
-    @socket.on 'joinedPublic', (gameId) =>
-      page('/games/'+gameId)
-
   setPlayerName: (playerName) ->
     @data.playerName = playerName
     @_update()
 
   joinPublicGame: ->
+    @socket.on('joinedPublic', @_joinedPublicGame)
     @socket.emit('joinPublic', @data.playerName)
 
+  _joinedPublicGame: (gameId) =>
+    page('/games/'+gameId)
+    @socket.removeListener('joinedPublic', @_joinedPublicGame)
+
   observe: (gameId) ->
+    @socket.on('data', @_receivedData)
     @socket.emit('observe', gameId)
 
+  _receivedData: (data) =>
+    if !@game
+      @game = new Game()
+      @game.startAnimating (state) =>
+        @data.gameState = state
+        @_update()
+    @game.replaceData(data)
+
   leave: ->
+    @socket.removeListener('data', @_receivedData)
     @socket.emit('leave')
+    @game.stopAnimating()
+    @game = null
 
   start: ->
     @socket.emit('start')

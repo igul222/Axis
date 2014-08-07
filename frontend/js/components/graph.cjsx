@@ -31,13 +31,14 @@ module.exports = React.createClass(
     context.lineTo(x0, @props.height)
     context.stroke()
 
-    #draw all dots, and their functions
+    #draw all dots
     for team in @props.gameState.teams
       for player in team.players
         for dot in player.dots
-          for fn in dot.functions
-            @drawFunctionFromDot(context, fn, dot)
           @drawDot(context, dot)
+
+    if @props.gameState.fn
+      @drawFunction(context, @props.gameState.fn)
 
     context.restore()
  
@@ -55,21 +56,18 @@ module.exports = React.createClass(
     context.strokeStyle = @DOT_COLOR
     context.stroke()
 
-  drawFunctionFromDot: (context, func, dot) ->
-    # Define start/end points and step interval
-    dx = (@props.xrange / @props.width)*0.01
-    x0 = dot.x
-    xMax = x0 + func.t*(@props.xrange/2 - dot.x)
-
+  drawFunction: (context, fn) ->
     context.beginPath()
     context.lineWidth = @FUNCTION_THICKNESS
     context.strokeStyle = @FUNCTION_COLOR
 
-    context.moveTo(@_g2c(dot.x, dot.y)...)
+    context.moveTo(@_g2c(fn.origin.x, fn.origin.y)...)
 
-    yTranslate = dot.y - func.func(x0)
-    for x in [x0..xMax] by dx
-      y = func.func(x) + yTranslate
+    dx = (@props.xrange / @props.width)*10
+
+    yTranslate = fn.origin.y - fn.evaluate(fn.origin.x)
+    for x in [fn.origin.x .. fn.xMax] by dx
+      y = fn.evaluate(x) + yTranslate
       context.lineTo(@_g2c(x, y)...)
 
     context.stroke()
