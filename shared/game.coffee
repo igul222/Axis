@@ -220,6 +220,7 @@ module.exports = class Game
     # with another Game object.
     replaceData: (newData) ->
       @data = newData
+      @state = null
       @playbackTime = @data.currentTime
 
     # Call the given callback whenever the game data changes, passing the

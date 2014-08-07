@@ -1,10 +1,10 @@
 React = require('react/addons')
 page  = require('page')
-
-window.gameClient = require('./client.coffee')
-
 WelcomePage = require('./components/welcome_page.cjsx')
 GamePage    = require('./components/game_page.cjsx')
+
+window.gameClient = require('./client.coffee')
+window.pp = (x) -> console.log(JSON.stringify(x,null,4))
 
 App = React.createClass(
   render: ->
