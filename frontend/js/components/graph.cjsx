@@ -63,7 +63,7 @@ module.exports = React.createClass(
 
     context.moveTo(@_g2c(fn.origin.x, fn.origin.y)...)
 
-    dx = (@props.xrange / @props.width)*10
+    dx = (@props.xrange / @props.width)*1
 
     yTranslate = fn.origin.y - fn.evaluate(fn.origin.x)
     for x in [fn.origin.x .. fn.xMax] by dx

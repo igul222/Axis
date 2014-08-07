@@ -14,11 +14,11 @@ module.exports = class Game
     constructor: ->
       @subscriberIds = []
       @subscriberCallbacks = {}
+      @playbackTime = Date.now()
       @lastFrameTime = null
       @animationRequestID = null
       @state = null
       @data =
-        now: Date.now()
         rand: Math.random()
         moves: []
 
@@ -210,7 +210,7 @@ module.exports = class Game
         xMax: active.dot.x + progress*((@BOARD_WIDTH/2)-active.dot.x)
       }
 
-      return progress >= 1
+      return (progress >= 1)
 
     ######################
     # Sync / subscriptions
@@ -220,7 +220,7 @@ module.exports = class Game
     # with another Game object.
     replaceData: (newData) ->
       @data = newData
-      @gameTime = @data.currentTime
+      @playbackTime = @data.currentTime
 
     # Call the given callback whenever the game data changes, passing the
     # new game data as an argument. Accepts an id which you can pass to
@@ -249,9 +249,9 @@ module.exports = class Game
     # Start animating, calling callback with a game state object every frame.
     startAnimating: (callback) ->
       animate = (t) =>
-        @data.now += (t - @lastFrameTime)
+        @playbackTime += (t - @lastFrameTime)
         @lastFrameTime = t
-        callback(@generateStateAtTime(@gameTime))
+        callback(@generateStateAtTime(@playbackTime))
         @animationRequestID = requestAnimationFrame(animate)
       @animationRequestID = requestAnimationFrame(animate)
 
