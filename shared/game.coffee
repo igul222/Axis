@@ -54,7 +54,7 @@ module.exports = class Game
     @fire: (expression) ->
       return {type: 'fire', expression: expression}
 
-    generateStateAtTime: (t) ->
+    generateStateAtTimeForPlayer: (t, playerId) ->
       unless @cachedState and t >= @cachedStateTime 
         @cachedStateTime = 0
         @cachedState = 
@@ -83,6 +83,12 @@ module.exports = class Game
       if state.cacheable
         @cachedState = state
         @cachedStateTime = t
+
+      for team, index in state.teams
+        for player in team.players
+          if (player.id == playerId)
+            state.flipped = index > 0
+
       return state
 
     #########
@@ -244,11 +250,11 @@ module.exports = class Game
       @subscriberCallbacks[subscriberId](@data)
 
     # Start animating, calling callback with a game state object every frame.
-    startAnimating: (callback) ->
+    startAnimatingForPlayer: (playerId, callback) ->
       animate = (t) =>
         @playbackTime += (t - @lastFrameTime)
         @lastFrameTime = t
-        callback(@generateStateAtTime(@playbackTime))
+        callback(@generateStateAtTimeForPlayer(@playbackTime, playerId))
         @animationRequestID = requestAnimationFrame(animate)
       @animationRequestID = requestAnimationFrame(animate)
 

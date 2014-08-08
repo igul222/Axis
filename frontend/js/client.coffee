@@ -30,7 +30,7 @@ class Client
   _receivedData: (data) =>
     if !@game
       @game = new Game()
-      @game.startAnimating (state) =>
+      @game.startAnimatingForPlayer this.socket.io.engine.id, (state) =>
         @data.gameState = state
         @_update()
     @game.replaceData(data)

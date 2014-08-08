@@ -6,6 +6,7 @@ module.exports = React.createClass(
   FUNCTION_COLOR: 'rgb(11,125,150)'
   FUNCTION_THICKNESS: 1 # 3px
   DOT_COLOR: 'rgb(150,0,0)'
+  ACTIVE_DOT_COLOR: 'rgb(0,50,150)'
   DOT_RADIUS: 10 # 10 px
   DOT_THICKNESS: 3 # 3 px
 
@@ -25,7 +26,8 @@ module.exports = React.createClass(
   paint: (context) ->
     console.log 'painting'
     context.save()
-    
+
+    @rotation = if @props.gameState.flipped then -1 else 1
     # Draw the axes
     x0 = 0.5 * @props.width
     y0 = 0.5 * @props.height
@@ -57,9 +59,9 @@ module.exports = React.createClass(
 
   drawDot: (context, dot) ->
     context.beginPath()
-    context.arc(@_g2c(dot.x, dot.y)..., @DOT_RADIUS, 0, 2*Math.PI)
+    context.arc(@_g2c(@rotation*dot.x, dot.y)..., @DOT_RADIUS, 0, 2*Math.PI)
     context.lineWidth = @DOT_THICKNESS
-    context.strokeStyle = @DOT_COLOR
+    context.strokeStyle = if dot.active then @ACTIVE_DOT_COLOR else @DOT_COLOR
     context.stroke()
 
   drawFunction: (context, fn) ->
@@ -67,14 +69,14 @@ module.exports = React.createClass(
     context.lineWidth = @FUNCTION_THICKNESS
     context.strokeStyle = @FUNCTION_COLOR
 
-    context.moveTo(@_g2c(fn.origin.x, fn.origin.y)...)
+    context.moveTo(@_g2c(@rotation*fn.origin.x, fn.origin.y)...)
 
     dx = (@props.xrange / @props.width)*1
 
-    yTranslate = fn.origin.y - fn.evaluate(fn.origin.x)
+    yTranslate = fn.origin.y #- fn.evaluate(fn.origin.x)
     for x in [fn.origin.x .. fn.xMax] by dx
-      y = fn.evaluate(x) + yTranslate
-      context.lineTo(@_g2c(x, y)...)
+      y = fn.evaluate(x-fn.origin.x) + yTranslate
+      context.lineTo(@_g2c(@rotation*x, y)...)
 
     context.stroke()
 
