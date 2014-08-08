@@ -27,7 +27,6 @@ module.exports = React.createClass(
     console.log 'painting'
     context.save()
 
-    @rotation = if @props.gameState.flipped then -1 else 1
     # Draw the axes
     x0 = 0.5 * @props.width
     y0 = 0.5 * @props.height
@@ -52,14 +51,15 @@ module.exports = React.createClass(
  
   # Convert graph coordinates to canvas coordinates
   _g2c: (x,y) ->
+    flip = if @props.gameState.flipped then -1 else 1
     [
-      (x + @props.xrange / 2) * (@props.width / @props.xrange),
+      flip * (x + @props.xrange / 2) * (@props.width / @props.xrange),
       (@props.height / 2) - @props.height*y/@props.yrange,
     ]
 
   drawDot: (context, dot) ->
     context.beginPath()
-    context.arc(@_g2c(@rotation*dot.x, dot.y)..., @DOT_RADIUS, 0, 2*Math.PI)
+    context.arc(@_g2c(dot.x, dot.y)..., @DOT_RADIUS, 0, 2*Math.PI)
     context.lineWidth = @DOT_THICKNESS
     context.strokeStyle = if dot.active then @ACTIVE_DOT_COLOR else @DOT_COLOR
     context.stroke()
@@ -69,14 +69,14 @@ module.exports = React.createClass(
     context.lineWidth = @FUNCTION_THICKNESS
     context.strokeStyle = @FUNCTION_COLOR
 
-    context.moveTo(@_g2c(@rotation*fn.origin.x, fn.origin.y)...)
+    context.moveTo(@_g2c(fn.origin.x, fn.origin.y)...)
 
     dx = (@props.xrange / @props.width)*1
 
     yTranslate = fn.origin.y #- fn.evaluate(fn.origin.x)
     for x in [fn.origin.x .. fn.xMax] by dx
       y = fn.evaluate(x-fn.origin.x) + yTranslate
-      context.lineTo(@_g2c(@rotation*x, y)...)
+      context.lineTo(@_g2c(x, y)...)
 
     context.stroke()
 
