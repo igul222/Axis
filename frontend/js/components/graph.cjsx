@@ -9,6 +9,8 @@ module.exports = React.createClass(
   ACTIVE_DOT_COLOR: 'rgb(0,50,150)'
   DOT_RADIUS: 10 # 10 px
   DOT_THICKNESS: 3 # 3 px
+  TEXT_FONT: '20px Helvetica Neue'
+  TEXT_COLOR: 'rgb(15,15,15)'
 
   shouldComponentUpdate: (nextProps, nextState) ->
     !_.isEqual @props, nextProps, (a,b) ->
@@ -43,6 +45,7 @@ module.exports = React.createClass(
       for player in team.players
         for dot in player.dots
           @drawDot(context, dot)
+          @drawText(context, player.name, {x: dot.x + 0.75, y: dot.y + 0.75})
 
     if @props.gameState.fn
       @drawFunction(context, @props.gameState.fn)
@@ -63,6 +66,11 @@ module.exports = React.createClass(
     context.lineWidth = @DOT_THICKNESS
     context.strokeStyle = if dot.active then @ACTIVE_DOT_COLOR else @DOT_COLOR
     context.stroke()
+
+  drawText: (context, text, origin) ->
+    context.font = @TEXT_FONT
+    context.fillStyle = @TEXT_COLOR
+    context.fillText(text, @_g2c(origin.x, origin.y)...)
 
   drawFunction: (context, fn) ->
     context.beginPath()
