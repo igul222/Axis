@@ -1,4 +1,5 @@
 React = require('react/addons')
+_     = require('lodash')
 
 module.exports = React.createClass(
   AXIS_COLOR: 'rgb(0,0,0)'
@@ -7,6 +8,10 @@ module.exports = React.createClass(
   DOT_COLOR: 'rgb(150,0,0)'
   DOT_RADIUS: 10 # 10 px
   DOT_THICKNESS: 3 # 3 px
+
+  shouldComponentUpdate: (nextProps, nextState) ->
+    !_.isEqual @props, nextProps, (a,b) ->
+      if _.isFunction(a) and _.isFunction(b) then true else undefined
 
   componentDidMount: ->
     context = @getDOMNode().getContext("2d")
@@ -18,6 +23,7 @@ module.exports = React.createClass(
     @paint(context)
 
   paint: (context) ->
+    console.log 'painting'
     context.save()
     
     # Draw the axes

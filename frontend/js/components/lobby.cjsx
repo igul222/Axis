@@ -1,6 +1,5 @@
-React = require('react/addons')
-_     = require('underscore')
-client  = require('../client.coffee')
+React  = require('react/addons')
+client = require('../client.coffee')
 
 module.exports = React.createClass(
   gameCanStart: ->

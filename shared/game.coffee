@@ -1,10 +1,11 @@
 # Represents and manages a game's state
 
-_ = require('underscore')
+_ = require('lodash')
 uuid = require('uuid')
 seed = require('seed-random')
 math = require('mathjs')
 deepcopy = require('deepcopy')
+React = require('react/addons')
 
 module.exports = class Game
     BOARD_WIDTH: 50
@@ -81,7 +82,7 @@ module.exports = class Game
 
       state.t = t
       @state = state if cacheState
-      return state
+      return React.addons.update(state, t: {$set: null})
 
     #########
     # Players
@@ -202,7 +203,8 @@ module.exports = class Game
       compiledFunction = math.compile(move.expression)
       progress = (time - move.t)/10000 # 10 second animation time
       state.fn = {
-        evaluate: (x) -> compiledFunction.eval(x: x)
+        expression: move.expression,
+        evaluate: (x) -> compiledFunction.eval(x: x),
         origin: active.dot,
         xMax: active.dot.x + progress*((@BOARD_WIDTH/2)-active.dot.x)
       }
