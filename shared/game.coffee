@@ -5,7 +5,6 @@ uuid = require('uuid')
 seed = require('seed-random')
 math = require('mathjs')
 deepcopy = require('deepcopy')
-React = require('react/addons')
 
 module.exports = class Game
     BOARD_WIDTH: 50
@@ -18,7 +17,8 @@ module.exports = class Game
       @playbackTime = Date.now()
       @lastFrameTime = null
       @animationRequestID = null
-      @state = null
+      @cachedState = null
+      @cachedStateTime = null
       @data =
         rand: Math.random()
         moves: []
@@ -54,42 +54,43 @@ module.exports = class Game
     @fire: (expression) ->
       return {type: 'fire', expression: expression}
 
-    blankState: ->
-      t: 0
-      teams: [
-          active: true
-          players: []
-        ,
-          active: false
-          players: []
-      ]
-      started: false
-
     generateStateAtTime: (t) ->
-      @state or= @blankState()
-      
-      state = if t >= @state.t then deepcopy(@state) else @blankState()
+      unless @cachedState and t >= @cachedStateTime 
+        @cachedStateTime = 0
+        @cachedState = 
+          cacheable: true
+          teams: [
+              active: true
+              players: []
+            ,
+              active: false
+              players: []
+          ]
+          started: false
 
-      cacheState = true
+      state = @cachedState
+
       for move in @data.moves
-        continue if move.t <= state.t
+        continue if move.t <= @cachedStateTime
         break if move.t > t
+        state = deepcopy(@cachedState) if state == @cachedState
         switch move.type
-          when 'addPlayer'    then cacheState = @_addPlayer(state, move) and cacheState
-          when 'removePlayer' then cacheState = @_removePlayer(state, move) and cacheState
-          when 'start'        then cacheState = @_start(state, move) and cacheState
-          when 'fire'         then cacheState = @_fire(state, move, t) and cacheState
+          when 'addPlayer'    then @_addPlayer(state, move)
+          when 'removePlayer' then @_removePlayer(state, move)
+          when 'start'        then @_start(state, move)
+          when 'fire'         then @_fire(state, move, t)
 
-      state.t = t
-      @state = state if cacheState
-      return React.addons.update(state, t: {$set: null})
+      if state.cacheable
+        @cachedState = state
+        @cachedStateTime = t
+      return state
 
     #########
     # Players
     #########
 
     _addPlayer: (state, move) ->
-      return true if state.started or move.agentId?
+      return if state.started or move.agentId?
 
       if state.teams[0].players.length <= state.teams[1].players.length
         team = state.teams[0]
@@ -103,13 +104,10 @@ module.exports = class Game
         dots: []
       }
 
-      return true
-
     _removePlayer: (state, move) ->
-      return true unless move.agentId == move.playerId
+      return unless move.agentId == move.playerId
       for team in state.teams
         team.players = _.reject(team.players, (p) -> p.id == move.id)
-      return true
 
     # Return the player with the given id, or undefined if none exists.
     _getPlayer: (state, id) ->
@@ -121,9 +119,9 @@ module.exports = class Game
     ##########
 
     _start: (state, move) ->
-      return true if move.agentId? or 
-                     !@_getPlayer(state, move.playerId) or 
-                     state.started
+      return if move.agentId? or 
+                !@_getPlayer(state, move.playerId) or 
+                state.started
 
       state.started = true
       @_generateInitialPositions(state)
@@ -131,8 +129,6 @@ module.exports = class Game
       state.teams[0].active = true
       state.teams[0].players[0].active = true
       state.teams[0].players[0].dots[0].active = true
-
-      return true
 
     # Populate players with randomly positioned dots
     _generateInitialPositions: (state) ->
@@ -198,7 +194,7 @@ module.exports = class Game
 
     _fire: (state, move, time) ->
       active = @_getActive(state)
-      return true unless move.agentId == active.player.id
+      return unless move.agentId == active.player.id
 
       compiledFunction = math.compile(move.expression)
       progress = (time - move.t)/10000 # 10 second animation time
@@ -209,7 +205,7 @@ module.exports = class Game
         xMax: active.dot.x + progress*((@BOARD_WIDTH/2)-active.dot.x)
       }
 
-      return (progress >= 1)
+      state.cacheable = (progress >= 1)
 
     ######################
     # Sync / subscriptions
@@ -219,7 +215,8 @@ module.exports = class Game
     # with another Game object.
     replaceData: (newData) ->
       @data = newData
-      @state = null
+      @cachedState = null
+      @cachedStateTime = null
       @playbackTime = @data.currentTime
 
     # Call the given callback whenever the game data changes, passing the
