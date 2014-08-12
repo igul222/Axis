@@ -61,7 +61,7 @@ module.exports = React.createClass(
   _g2c: (x,y) ->
     flip = if @props.gameState.flipped then -1 else 1
     [
-      flip * (x + @props.xrange / 2) * (@props.width / @props.xrange),
+      ((flip * x) + @props.xrange / 2) * (@props.width / @props.xrange),
       (@props.height / 2) - @props.height*y/@props.yrange,
     ]
 
