@@ -10,6 +10,7 @@ module.exports = class Game
     BOARD_WIDTH: 50
     BOARD_HEIGHT: 30
     DOTS_PER_PLAYER: 2
+    FN_ANIMATION_SPEED: 0.005 # graph units per ms
 
     constructor: ->
       @subscriberIds = []
@@ -17,8 +18,8 @@ module.exports = class Game
       @playbackTime = Date.now()
       @lastFrameTime = null
       @animationRequestID = null
-      @cachedState = null
-      @cachedStateTime = null
+      @state = null
+      @stateTime = null
       @data =
         rand: Math.random()
         moves: []
@@ -55,10 +56,11 @@ module.exports = class Game
       return {type: 'fire', expression: expression}
 
     generateStateAtTimeForPlayer: (t, playerId) ->
-      unless @cachedState and t >= @cachedStateTime 
-        @cachedStateTime = 0
-        @cachedState = 
-          cacheable: true
+      # If @state and t >= @stateTime, we can start from there. Otherwise
+      # we need to replay from the beginning.
+      unless @state and t >= @stateTime
+        @stateTime = 0
+        @state = 
           teams: [
               active: true
               players: []
@@ -68,28 +70,22 @@ module.exports = class Game
           ]
           started: false
 
-      state = @cachedState
+      while @stateTime < t
+        nextMove = _.find(@data.moves, (m) => m.t > @stateTime)
+        dt = Math.min(t, nextMove?.t || Infinity) - @stateTime
+        @stateTime += dt
+        
+        # Apply move (if any) at t
+        if nextMove?.t == @stateTime
+          switch nextMove.type
+            when 'addPlayer'    then @_addPlayer(@state, move)
+            when 'removePlayer' then @_removePlayer(@state, move)
+            when 'start'        then @_start(@state, move, playerId)
+            when 'fire'         then @_fire(@state, move, @stateTime)
 
-      for move in @data.moves
-        continue if move.t <= @cachedStateTime
-        break if move.t > t
-        state = deepcopy(@cachedState) if state == @cachedState
-        switch move.type
-          when 'addPlayer'    then @_addPlayer(state, move)
-          when 'removePlayer' then @_removePlayer(state, move)
-          when 'start'        then @_start(state, move)
-          when 'fire'         then @_fire(state, move, t)
+        @_stepFunction(@state, @stateTime, dt) if @state.fn
 
-      if state.cacheable
-        @cachedState = state
-        @cachedStateTime = t
-
-      for team, index in state.teams
-        for player in team.players
-          if (player.id == playerId)
-            state.flipped = index > 0
-
-      return state
+      return @state
 
     #########
     # Players
@@ -124,7 +120,7 @@ module.exports = class Game
     # Gameplay
     ##########
 
-    _start: (state, move) ->
+    _start: (state, move, playerId) ->
       return if move.agentId? or 
                 !@_getPlayer(state, move.playerId) or 
                 state.started
@@ -136,6 +132,17 @@ module.exports = class Game
       state.teams[0].players[0].active = true
       state.teams[0].players[0].dots[0].active = true
 
+      for team, index in state.teams
+        for player in team.players
+          if (player.id == playerId)
+            state.flipped = index > 0
+
+    _dist: (point1, point2) ->
+      Math.sqrt(
+        Math.pow(point2.x - point1.x, 2) +
+        Math.pow(point2.y - point1.y, 2)
+      )
+
     # Populate players with randomly positioned dots
     _generateInitialPositions: (state) ->
       rand = seed(@data.rand)
@@ -144,12 +151,6 @@ module.exports = class Game
         x: (rand() * width) + x0
         y: (rand() * height) + y0
 
-      dist = (point1, point2) ->
-        Math.sqrt(
-          Math.pow(point2.x - point1.x, 2) +
-          Math.pow(point2.y - point1.y, 2)
-        )
-
       # Keep track of generated dots to avoid generating two nearby dots
       dots = []
 
@@ -157,7 +158,7 @@ module.exports = class Game
         hOffset = (teamIndex-1) * (@BOARD_WIDTH/2)
         for player in team.players
           for i in [1..@DOTS_PER_PLAYER]
-            until dot? && dots.every((d)-> dist(dot,d) > 4)
+            until dot? && dots.every((d)=> @_dist(dot,d) > 4)
               dot = randomPoint(
                 hOffset, 
                 -@BOARD_HEIGHT/2, 
@@ -198,20 +199,23 @@ module.exports = class Game
       dot = _.find(player.dots, (x) -> x.active)
       {team, player, dot}
 
-    _fire: (state, move, time) ->
+    _fire: (state, move, stateTime) ->
       active = @_getActive(state)
       return unless move.agentId == active.player.id
 
       compiledFunction = math.compile(move.expression)
-      progress = (time - move.t)/10000 # 10 second animation time
       state.fn = {
         expression: move.expression,
         evaluate: (x) -> compiledFunction.eval(x: x),
-        origin: active.dot,
-        xMax: active.dot.x + progress*((@BOARD_WIDTH/2)-active.dot.x)
+        origin: {x: active.dot.x, y: active.dot.y},
+        startTime: stateTime
       }
 
-      state.cacheable = (progress >= 1)
+    _stepFunction: (state, stateTime, dt) ->
+      x0 = state.fn.origin.x + @FN_ANIMATION_SPEED*((stateTime-dt)-state.fn.startTime)
+      xMax = state.fn.origin.x + @FN_ANIMATION_SPEED*(stateTime-state.fn.startTime)
+      # TODO: collision detection and stuff here
+      delete state.fn if xMax >= @BOARD_WIDTH/2
 
     ######################
     # Sync / subscriptions
@@ -221,8 +225,8 @@ module.exports = class Game
     # with another Game object.
     replaceData: (newData) ->
       @data = newData
-      @cachedState = null
-      @cachedStateTime = null
+      @state = null
+      @stateTime = null
       @playbackTime = @data.currentTime
 
     # Call the given callback whenever the game data changes, passing the

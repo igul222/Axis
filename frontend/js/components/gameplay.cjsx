@@ -1,6 +1,6 @@
 React = require('react/addons')
-Graph = require('./graph.cjsx')
 Game = require('../../../shared/game.coffee')
+Graph = require('./graph.cjsx')
 client = require('../client.coffee')
 
 module.exports = React.createClass(

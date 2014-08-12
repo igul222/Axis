@@ -12,10 +12,6 @@ module.exports = React.createClass(
   TEXT_FONT: '20px Helvetica Neue'
   TEXT_COLOR: 'rgb(15,15,15)'
 
-  shouldComponentUpdate: (nextProps, nextState) ->
-    !_.isEqual @props, nextProps, (a,b) ->
-      if _.isFunction(a) and _.isFunction(b) then true else undefined
-
   componentDidMount: ->
     context = @getDOMNode().getContext("2d")
     @paint(context)
@@ -82,7 +78,7 @@ module.exports = React.createClass(
     dx = (@props.xrange / @props.width)*1
 
     yTranslate = fn.origin.y #- fn.evaluate(fn.origin.x)
-    for x in [fn.origin.x .. fn.xMax] by dx
+    for x in [fn.origin.x .. (@props.xrange/2)] by dx
       y = fn.evaluate(x-fn.origin.x) + yTranslate
       context.lineTo(@_g2c(x, y)...)
 
