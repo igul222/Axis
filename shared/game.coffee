@@ -78,10 +78,10 @@ module.exports = class Game
         # Apply move (if any) at t
         if nextMove?.t == @stateTime
           switch nextMove.type
-            when 'addPlayer'    then @_addPlayer(@state, move)
-            when 'removePlayer' then @_removePlayer(@state, move)
-            when 'start'        then @_start(@state, move, playerId)
-            when 'fire'         then @_fire(@state, move, @stateTime)
+            when 'addPlayer'    then @_addPlayer(@state, nextMove)
+            when 'removePlayer' then @_removePlayer(@state, nextMove)
+            when 'start'        then @_start(@state, nextMove, playerId)
+            when 'fire'         then @_fire(@state, nextMove, @stateTime)
 
         @_stepFunction(@state, @stateTime, dt) if @state.fn
 
