@@ -16,10 +16,7 @@ module.exports = React.createClass(
     <div>
       <Graph
         gameState={@props.data.gameState}
-        width={800}
-        height={480}
-        xrange={Game::BOARD_WIDTH}
-        yrange={Game::BOARD_HEIGHT}
+        canvasWidth={800}
       />
       
       <p>Function:</p>

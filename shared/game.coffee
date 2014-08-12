@@ -7,10 +7,11 @@ math = require('mathjs')
 deepcopy = require('deepcopy')
 
 module.exports = class Game
-    BOARD_WIDTH: 50
-    BOARD_HEIGHT: 30
+    X_MAX: 25
+    Y_MAX: 15
     DOTS_PER_PLAYER: 2
     FN_ANIMATION_SPEED: 0.005 # graph units per ms
+    DOT_RADIUS: 1
 
     constructor: ->
       @subscriberIds = []
@@ -82,7 +83,7 @@ module.exports = class Game
             when 'start'        then @_start(@state, nextMove, playerId)
             when 'fire'         then @_fire(@state, nextMove)
 
-        @_stepFunction(@state, @state.time, dt) if @state.fn
+        @_stepFunction(@state, dt) if @state.fn
 
       return @state
 
@@ -154,15 +155,15 @@ module.exports = class Game
       dots = []
 
       for team, teamIndex in state.teams
-        hOffset = (teamIndex-1) * (@BOARD_WIDTH/2)
+        hOffset = (teamIndex-1) * (@X_MAX)
         for player in team.players
           for i in [1..@DOTS_PER_PLAYER]
             until dot? && dots.every((d)=> @_dist(dot,d) > 4)
               dot = randomPoint(
                 hOffset, 
-                -@BOARD_HEIGHT/2, 
-                @BOARD_WIDTH/2, 
-                @BOARD_HEIGHT
+                -@Y_MAX, 
+                @X_MAX, 
+                @Y_MAX*2
               )
             dot.functions = []
             dot.active = false
@@ -210,11 +211,18 @@ module.exports = class Game
         startTime: state.time
       }
 
-    _stepFunction: (state, stateTime, dt) ->
-      x0 = state.fn.origin.x + @FN_ANIMATION_SPEED*((stateTime-dt)-state.fn.startTime)
-      xMax = state.fn.origin.x + @FN_ANIMATION_SPEED*(stateTime-state.fn.startTime)
-      # TODO: collision detection and stuff here
-      delete state.fn if xMax >= @BOARD_WIDTH/2
+    _stepFunction: (state, dt) ->
+      x0 = state.fn.origin.x + @FN_ANIMATION_SPEED*((state.time-dt)-state.fn.startTime)
+      xMax = state.fn.origin.x + @FN_ANIMATION_SPEED*(state.time-state.fn.startTime)
+      dx = 0.05
+      
+      dots = _.flatten(state.teams.map((t) -> t.players.map((p) -> p.dots)))
+      for x in [x0 .. xMax] by dx
+        y = state.fn.evaluate(x)
+        # for dot in dots
+          # if @_dist({x,y}, dot) < 1
+
+      delete state.fn if xMax >= @X_MAX
 
     ######################
     # Sync / subscriptions

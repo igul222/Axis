@@ -11,8 +11,11 @@ describe 'Game', ->
   describe '#generateStateAtTimeForPlayer(t, playerId)', =>
 
     it 'should return a state object', =>
-      assert @game.generateStateAtTimeForPlayer(10, null).teams
-
+      state = @game.generateStateAtTimeForPlayer(10, null)
+      assert state.time
+      assert state.started==false
+      assert state.teams?.length == 2
+      assert state.teams[0].players?.length == 0
 
   describe 'adding players', =>
 
