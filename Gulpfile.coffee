@@ -64,7 +64,7 @@ gulp.task 'default', ->
 
   nodemon(
     script: 'web.coffee',
-    ignore: ['public/compiled/*', 'frontend/*']
+    ignore: ['public/compiled/*', 'frontend/*', 'node_modules/*']
   ).on 'restart', -> setTimeout ->
     gutil.log 'Live-reloading (Express restarted)'
     lr.changed(body: {files: ['/']})
