@@ -1,5 +1,7 @@
+Game  = require('../../../shared/game.coffee')
 React = require('react/addons')
 _     = require('lodash')
+
 
 module.exports = React.createClass(
   AXIS_COLOR: 'rgb(0,0,0)'
@@ -12,9 +14,17 @@ module.exports = React.createClass(
   TEXT_FONT: '20px Helvetica Neue'
   TEXT_COLOR: 'rgb(15,15,15)'
 
+  getInitialState: ->
+    t: 0.0
+
   componentDidMount: ->
     context = @getDOMNode().getContext("2d")
+    requestAnimationFrame @tick
     @paint(context)
+
+  tick: ->
+    @setState t: @state.t + 1
+    requestAnimationFrame @tick
 
   componentDidUpdate: ->
     context = @getDOMNode().getContext("2d")
@@ -22,7 +32,6 @@ module.exports = React.createClass(
     @paint(context)
 
   paint: (context) ->
-    console.log 'painting'
     context.save()
 
     # Draw the axes
@@ -44,7 +53,7 @@ module.exports = React.createClass(
           @drawText(context, player.name, {x: dot.x + 0.75, y: dot.y + 0.75})
 
     if @props.gameState.fn
-      @drawFunction(context, @props.gameState.fn)
+      @drawFunction(context)
 
     context.restore()
  
@@ -68,7 +77,9 @@ module.exports = React.createClass(
     context.fillStyle = @TEXT_COLOR
     context.fillText(text, @_g2c(origin.x, origin.y)...)
 
-  drawFunction: (context, fn) ->
+  drawFunction: (context) ->
+    fn = @props.gameState.fn
+
     context.beginPath()
     context.lineWidth = @FUNCTION_THICKNESS
     context.strokeStyle = @FUNCTION_COLOR
@@ -77,8 +88,10 @@ module.exports = React.createClass(
 
     dx = (@props.xrange / @props.width)*1
 
-    yTranslate = fn.origin.y #- fn.evaluate(fn.origin.x)
-    for x in [fn.origin.x .. (@props.xrange/2)] by dx
+    xMax = fn.origin.x + Game::FN_ANIMATION_SPEED*(@props.gameState.time - fn.startTime)
+
+    yTranslate = fn.origin.y
+    for x in [fn.origin.x .. xMax] by dx
       y = fn.evaluate(x-fn.origin.x) + yTranslate
       context.lineTo(@_g2c(x, y)...)
 

@@ -19,7 +19,6 @@ module.exports = class Game
       @lastFrameTime = null
       @animationRequestID = null
       @state = null
-      @stateTime = null
       @data =
         rand: Math.random()
         moves: []
@@ -56,11 +55,11 @@ module.exports = class Game
       return {type: 'fire', expression: expression}
 
     generateStateAtTimeForPlayer: (t, playerId) ->
-      # If @state and t >= @stateTime, we can start from there. Otherwise
+      # If @state and t >= @state.time, we can start from there. Otherwise
       # we need to replay from the beginning.
-      unless @state and t >= @stateTime
-        @stateTime = 0
+      unless @state and t >= @state.time
         @state = 
+          time: 0
           teams: [
               active: true
               players: []
@@ -70,20 +69,20 @@ module.exports = class Game
           ]
           started: false
 
-      while @stateTime < t
-        nextMove = _.find(@data.moves, (m) => m.t > @stateTime)
-        dt = Math.min(t, nextMove?.t || Infinity) - @stateTime
-        @stateTime += dt
-        
+      while @state.time < t
+        nextMove = _.find(@data.moves, (m) => m.t > @state.time)
+        dt = Math.min(t, nextMove?.t || Infinity) - @state.time
+        @state.time += dt
+
         # Apply move (if any) at t
-        if nextMove?.t == @stateTime
+        if nextMove?.t == @state.time
           switch nextMove.type
             when 'addPlayer'    then @_addPlayer(@state, nextMove)
             when 'removePlayer' then @_removePlayer(@state, nextMove)
             when 'start'        then @_start(@state, nextMove, playerId)
-            when 'fire'         then @_fire(@state, nextMove, @stateTime)
+            when 'fire'         then @_fire(@state, nextMove)
 
-        @_stepFunction(@state, @stateTime, dt) if @state.fn
+        @_stepFunction(@state, @state.time, dt) if @state.fn
 
       return @state
 
@@ -199,7 +198,7 @@ module.exports = class Game
       dot = _.find(player.dots, (x) -> x.active)
       {team, player, dot}
 
-    _fire: (state, move, stateTime) ->
+    _fire: (state, move) ->
       active = @_getActive(state)
       return unless move.agentId == active.player.id
 
@@ -208,7 +207,7 @@ module.exports = class Game
         expression: move.expression,
         evaluate: (x) -> compiledFunction.eval(x: x),
         origin: {x: active.dot.x, y: active.dot.y},
-        startTime: stateTime
+        startTime: state.time
       }
 
     _stepFunction: (state, stateTime, dt) ->
@@ -226,7 +225,6 @@ module.exports = class Game
     replaceData: (newData) ->
       @data = newData
       @state = null
-      @stateTime = null
       @playbackTime = @data.currentTime
 
     # Call the given callback whenever the game data changes, passing the
