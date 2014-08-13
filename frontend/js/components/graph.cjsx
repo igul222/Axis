@@ -10,6 +10,7 @@ module.exports = React.createClass(
   DOT_THICKNESS: 3 # px
   DOT_COLOR: 'rgb(150,0,0)'
   ACTIVE_DOT_COLOR: 'rgb(0,50,150)'
+  DEAD_DOT_COLOR: 'rgb(150,150,150)'
   TEXT_FONT: '20px Helvetica Neue'
   TEXT_COLOR: 'rgb(15,15,15)'
 
@@ -84,7 +85,12 @@ module.exports = React.createClass(
       2*Math.PI
     )
     context.lineWidth = @DOT_THICKNESS
-    context.strokeStyle = if dot.active then @ACTIVE_DOT_COLOR else @DOT_COLOR
+    if dot.active
+      context.strokeStyle = @ACTIVE_DOT_COLOR
+    else if !dot.alive
+      context.strokeStyle = @DEAD_DOT_COLOR
+    else
+      context.strokeStyle = @DOT_COLOR
     context.stroke()
 
   drawText: (context, text, origin) ->
@@ -105,9 +111,8 @@ module.exports = React.createClass(
 
     xMax = fn.origin.x + Game::FN_ANIMATION_SPEED*(@props.gameState.time - fn.startTime)
 
-    yTranslate = fn.origin.y
     for x in [fn.origin.x .. xMax] by dx
-      y = fn.evaluate(x-fn.origin.x) + yTranslate
+      y = fn.evaluate(x)
       context.lineTo(@_g2c(x, y)...)
 
     context.stroke()

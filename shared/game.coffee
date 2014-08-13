@@ -73,8 +73,10 @@ module.exports = class Game
 
       while @state.time < t
         nextMove = _.find(@data.moves, (m) => m.t > @state.time)
-        dt = Math.min(t, if nextMove then nextMove.t else Infinity) - @state.time
+        dt = (if nextMove then Math.min(nextMove.t, t) else t) - @state.time
         @state.time += dt
+
+        @_processCollisions(@state, dt) if @state.fn
 
         # Apply move (if any) at t
         if nextMove?.t == @state.time
@@ -83,8 +85,6 @@ module.exports = class Game
             when 'removePlayer' then @_removePlayer(@state, nextMove)
             when 'start'        then @_start(@state, nextMove)
             when 'fire'         then @_fire(@state, nextMove)
-
-        @_stepFunction(@state, dt) if @state.fn
 
       return @state
 
@@ -207,12 +207,15 @@ module.exports = class Game
       compiledFunction = math.compile(move.expression)
       state.fn = {
         expression: move.expression,
-        evaluate: (x) -> compiledFunction.eval(x: x),
+        evaluate: (x) -> compiledFunction.eval(x: x - active.dot.x) - compiledFunction.eval(x: 0) + active.dot.y,
         origin: {x: active.dot.x, y: active.dot.y},
         startTime: state.time
       }
 
-    _stepFunction: (state, dt) ->
+    _processCollisions: (state, dt) ->
+      # Don't process collisions for times before the function was fired
+      dt = Math.min(dt, state.time - state.fn.startTime)
+
       x0 = state.fn.origin.x + @FN_ANIMATION_SPEED*((state.time-dt)-state.fn.startTime)
       xMax = state.fn.origin.x + @FN_ANIMATION_SPEED*(state.time-state.fn.startTime)
       dx = 0.05
