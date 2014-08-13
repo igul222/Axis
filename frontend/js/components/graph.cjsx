@@ -14,16 +14,19 @@ module.exports = React.createClass(
   TEXT_FONT: '20px Helvetica Neue'
   TEXT_COLOR: 'rgb(15,15,15)'
 
-  getInitialState: ->
-    t: 0.0
-
   componentDidMount: ->
     context = @getDOMNode().getContext("2d")
+    @lastAnimationTimestamp = 0
     requestAnimationFrame @tick
     @paint(context)
 
-  tick: ->
-    @setState t: @state.t + 1
+  tick: (animationTimestamp) ->
+    dt = animationTimestamp - @lastAnimationTimestamp
+    @lastAnimationTimestamp = animationTimestamp
+
+    if @props.gameState.fn
+      @extendFunction(dt)
+
     requestAnimationFrame @tick
 
   componentDidUpdate: ->
@@ -38,6 +41,9 @@ module.exports = React.createClass(
 
   paint: (context) ->
     context.save()
+    
+    if @props.gameState.fn
+      @drawEntireFunction(context)
 
     # Draw the axes
     context.beginPath()
@@ -48,15 +54,14 @@ module.exports = React.createClass(
     context.lineTo(@_g2c(0,  Game::Y_MAX)...)
     context.stroke()
 
+
     #draw all dots
     for team in @props.gameState.teams
       for player in team.players
         for dot in player.dots
           @drawDot(context, dot)
-          @drawText(context, player.name, {x: dot.x + 0.75, y: dot.y + 0.75})
+          @drawText(context, player.name, {x: dot.x, y: dot.y + 1})
 
-    if @props.gameState.fn
-      @drawFunction(context)
 
     context.restore()
 
@@ -98,21 +103,33 @@ module.exports = React.createClass(
     context.fillStyle = @TEXT_COLOR
     context.fillText(text, @_g2c(origin.x, origin.y)...)
 
-  drawFunction: (context) ->
-    fn = @props.gameState.fn
+  drawEntireFunction: (context) ->
+    @tMax = @props.gameState.time - @props.gameState.fn.startTime
+    @drawFunctionSegment(context, 0, @tMax)
 
+  extendFunction: (dt) ->
+    context = @getDOMNode().getContext("2d")
+
+    context.save()
+    @drawFunctionSegment(context, @tMax, @tMax + dt)
+    @tMax += dt
+
+    context.restore()
+
+  drawFunctionSegment: (context, t0, tMax) ->
     context.beginPath()
     context.lineWidth = @FUNCTION_THICKNESS
     context.strokeStyle = @FUNCTION_COLOR
 
-    context.moveTo(@_g2c(fn.origin.x, fn.origin.y)...)
+    x0   = @props.gameState.fn.origin.x + (Game::FN_ANIMATION_SPEED*t0)
+    xMax = @props.gameState.fn.origin.x + (Game::FN_ANIMATION_SPEED*tMax)
+
+    context.moveTo(@_g2c(x0, @props.gameState.fn.evaluate(x0))...)
 
     dx = 1/@_toPx(1)
 
-    xMax = fn.origin.x + Game::FN_ANIMATION_SPEED*(@props.gameState.time - fn.startTime)
-
-    for x in [fn.origin.x .. xMax] by dx
-      y = fn.evaluate(x)
+    for x in [x0 .. xMax] by dx
+      y = @props.gameState.fn.evaluate(x)
       context.lineTo(@_g2c(x, y)...)
 
     context.stroke()
