@@ -28,8 +28,8 @@ module.exports = class Game
     # Moves / state generation
     ##########################
 
-    pushMove: (agentId, move) ->
-      move.t = Date.now()
+    pushMove: (move, agentId, time) ->
+      move.t = time || Date.now()
       move.agentId = agentId
       @data.moves.push(move)
       @_dataUpdateAll()
@@ -166,7 +166,7 @@ module.exports = class Game
                 @X_MAX, 
                 @Y_MAX*2
               )
-            dot.functions = []
+            dot.alive = true
             dot.active = false
             dots.push(dot)
             player.dots.push(dot)
@@ -216,12 +216,16 @@ module.exports = class Game
       x0 = state.fn.origin.x + @FN_ANIMATION_SPEED*((state.time-dt)-state.fn.startTime)
       xMax = state.fn.origin.x + @FN_ANIMATION_SPEED*(state.time-state.fn.startTime)
       dx = 0.05
-      
-      dots = _.flatten(state.teams.map((t) -> t.players.map((p) -> p.dots)))
+
+      active = @_getActive(state)
       for x in [x0 .. xMax] by dx
         y = state.fn.evaluate(x)
-        # for dot in dots
-          # if @_dist({x,y}, dot) < 1
+
+        for team in state.teams
+          for player in team.players
+            for dot, index in player.dots
+              if dot != active.dot and @_dist({x,y}, dot) < @DOT_RADIUS
+                player.dots[index].alive = false
 
       delete state.fn if xMax >= @X_MAX
 

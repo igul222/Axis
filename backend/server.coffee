@@ -13,7 +13,7 @@ module.exports = (io) ->
 
     socket.on 'joinPublic', (name) ->
       currentGame = games[openGame]
-      currentGame.pushMove(null, Game.addPlayer(socket.id, name))
+      currentGame.pushMove(Game.addPlayer(socket.id, name), null)
       socket.emit('joinedPublic', openGame)
 
     socket.on 'observe', (gameId) ->
@@ -22,21 +22,21 @@ module.exports = (io) ->
         socket.emit('data', data)
 
     socket.on 'start', ->
-      currentGame?.pushMove(null, Game.start(socket.id))
+      currentGame?.pushMove(Game.start(socket.id), null)
 
       if currentGame == games[openGame] and currentGame.generateStateAtTimeForPlayer(Date.now(), null).started
         openGame = uuid.v4()
         games[openGame] = new Game()
 
     socket.on 'pushMove', (move)->
-      currentGame?.pushMove(socket.id, move)
+      currentGame?.pushMove(move, socket.id)
 
     socket.on 'leave', ->
       if currentGame
         currentGame.dataUnsubscribe(socket.id)
-        currentGame.pushMove(socket.id, Game.removePlayer(socket.id))
+        currentGame.pushMove(Game.removePlayer(socket.id), socket.id)
 
     socket.on 'disconnect', ->
       if currentGame
         currentGame.dataUnsubscribe(socket.id)
-        currentGame.pushMove(socket.id, Game.removePlayer(socket.id))
+        currentGame.pushMove(Game.removePlayer(socket.id), socket.id)

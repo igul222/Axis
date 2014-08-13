@@ -1,7 +1,7 @@
 require('node-cjsx').transform()
 
-assert = require('assert')
-dom = require('./dom.coffee')
+assert  = require('assert')
+helpers = require('./helpers.coffee')
 
 React = null
 Graph = null
@@ -9,18 +9,17 @@ Graph = null
 describe 'Graph', ->
 
   beforeEach =>
-    dom.init()
+    helpers.initDOM()
 
     React = require('react/addons')
     Graph = require('../frontend/js/components/graph.cjsx')
 
-    gameState = require('./gameState.coffee')
     @graph = React.addons.TestUtils.renderIntoDocument(
-      Graph({gameState: gameState, canvasWidth: 100})
+      Graph({gameState: helpers.generateGame().state, canvasWidth: 100})
     )
 
   afterEach =>
-    com.clean()
+    helpers.cleanDOM()
 
   describe '#_g2c', =>
 
