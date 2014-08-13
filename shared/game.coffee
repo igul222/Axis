@@ -55,11 +55,13 @@ module.exports = class Game
     @fire: (expression) ->
       return {type: 'fire', expression: expression}
 
+    # Updates @state to the given time and player, returning @state.
     generateStateAtTimeForPlayer: (t, playerId) ->
       # If @state and t >= @state.time, we can start from there. Otherwise
       # we need to replay from the beginning.
       unless @state and t >= @state.time and playerId == @state.playerId
         @state = 
+          updated: true
           playerId: playerId
           time: -1
           teams: [
@@ -80,6 +82,7 @@ module.exports = class Game
 
         # Apply move (if any) at t
         if nextMove?.t == @state.time
+          @state.updated = true
           switch nextMove.type
             when 'addPlayer'    then @_addPlayer(@state, nextMove)
             when 'removePlayer' then @_removePlayer(@state, nextMove)
@@ -227,10 +230,13 @@ module.exports = class Game
         for team in state.teams
           for player in team.players
             for dot, index in player.dots
-              if dot != active.dot and @_dist({x,y}, dot) < @DOT_RADIUS
+              if dot.alive and dot != active.dot and @_dist({x,y}, dot) < @DOT_RADIUS
                 player.dots[index].alive = false
+                state.updated = true
 
-      delete state.fn if xMax >= @X_MAX
+      if xMax >= @X_MAX
+        delete state.fn
+        state.updated = true
 
     ######################
     # Sync / subscriptions
@@ -272,7 +278,13 @@ module.exports = class Game
       animate = (t) =>
         @playbackTime += (t - @lastFrameTime)
         @lastFrameTime = t
-        callback(@generateStateAtTimeForPlayer(@playbackTime, playerId))
+
+        @generateStateAtTimeForPlayer(@playbackTime, playerId)
+        if @state.updated
+          console.log 'sending callback'
+          callback(@state)
+          @state.updated = false
+
         @animationRequestID = requestAnimationFrame(animate)
       @animationRequestID = requestAnimationFrame(animate)
 
