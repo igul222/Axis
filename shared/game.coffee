@@ -58,9 +58,10 @@ module.exports = class Game
     generateStateAtTimeForPlayer: (t, playerId) ->
       # If @state and t >= @state.time, we can start from there. Otherwise
       # we need to replay from the beginning.
-      unless @state and t >= @state.time
+      unless @state and t >= @state.time and playerId == @state.playerId
         @state = 
-          time: 0
+          playerId: playerId
+          time: -1
           teams: [
               active: true
               players: []
@@ -72,7 +73,7 @@ module.exports = class Game
 
       while @state.time < t
         nextMove = _.find(@data.moves, (m) => m.t > @state.time)
-        dt = Math.min(t, nextMove?.t || Infinity) - @state.time
+        dt = Math.min(t, if nextMove then nextMove.t else Infinity) - @state.time
         @state.time += dt
 
         # Apply move (if any) at t
@@ -80,7 +81,7 @@ module.exports = class Game
           switch nextMove.type
             when 'addPlayer'    then @_addPlayer(@state, nextMove)
             when 'removePlayer' then @_removePlayer(@state, nextMove)
-            when 'start'        then @_start(@state, nextMove, playerId)
+            when 'start'        then @_start(@state, nextMove)
             when 'fire'         then @_fire(@state, nextMove)
 
         @_stepFunction(@state, dt) if @state.fn
@@ -120,7 +121,7 @@ module.exports = class Game
     # Gameplay
     ##########
 
-    _start: (state, move, playerId) ->
+    _start: (state, move) ->
       return if move.agentId? or 
                 !@_getPlayer(state, move.playerId) or 
                 state.started
@@ -134,7 +135,7 @@ module.exports = class Game
 
       for team, index in state.teams
         for player in team.players
-          if (player.id == playerId)
+          if (player.id == state.playerId)
             state.flipped = index > 0
 
     _dist: (point1, point2) ->
