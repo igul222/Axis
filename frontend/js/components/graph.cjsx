@@ -44,9 +44,6 @@ module.exports = React.createClass(
 
   paint: (context) ->
     context.save()
-    
-    if @props.gameState.fn
-      @drawEntireFunction(context)
 
     # Draw the axes
     context.beginPath()
@@ -57,6 +54,12 @@ module.exports = React.createClass(
     context.lineTo(@_g2c(0,  Game::Y_MAX)...)
     context.stroke()
 
+    #draw all obstacles
+    for obstacle in @props.gameState.obstacles
+      @drawObstacle(context, obstacle)
+
+    for antiobstacle in @props.gameState.antiobstacles
+      @drawAntiObstacle(context, antiobstacle)
 
     #draw all dots
     for team in @props.gameState.teams
@@ -66,6 +69,8 @@ module.exports = React.createClass(
           @drawDot(context, dot, active)
           @drawText(context, player.name, {x: dot.x, y: dot.y + 1})
 
+    if @props.gameState.fn
+      @drawEntireFunction(context)
 
     context.restore()
 
@@ -102,6 +107,37 @@ module.exports = React.createClass(
       context.strokeStyle = @DOT_COLOR
     context.stroke()
 
+  drawAntiObstacle: (context, ao)->
+    context.beginPath()
+    context.arc(
+      @_g2c(ao.x, ao.y)..., 
+      @_toPx(Game::DOT_RADIUS) - @DOT_THICKNESS/2, 
+      0, 
+      2*Math.PI
+    )
+    context.lineWidth = @DOT_THICKNESS
+    context.strokeStyle = "white"
+    context.fillStyle = "white"
+
+    context.fill()
+    context.stroke()
+
+  drawObstacle: (context, obstacle) ->
+    context.beginPath()
+    
+    context.fillStyle = "black"
+    context.strokeStyle = "black"
+
+    context.arc(
+      @_g2c(obstacle.x, obstacle.y)...,
+      @_toPx(obstacle.radius),
+      0,
+      2*Math.PI
+    )
+
+    context.fill()
+    context.stroke()
+
   drawText: (context, text, origin) ->
     context.font = @TEXT_FONT
     context.fillStyle = @TEXT_COLOR
@@ -130,7 +166,7 @@ module.exports = React.createClass(
 
     context.moveTo(@_g2c(x0, @props.gameState.fn.evaluate(x0))...)
 
-    dx = 1/@_toPx(1)
+    dx = 1/@_toPx(10)
 
     for x in [x0 .. xMax] by dx
       y = @props.gameState.fn.evaluate(x)

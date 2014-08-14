@@ -13,6 +13,9 @@ module.exports = class Game
     FN_ANIMATION_SPEED: 0.005 # graph units per ms
     DOT_RADIUS: 1
     TURN_TIME: 60000 # ms
+    OBSTACLE_COUNT: 5
+    OBSTACLE_RADIUS: 5
+    ANTIOBSTACLE_RADIUS: 1
 
     constructor: ->
       @subscriberIds = []
@@ -78,6 +81,9 @@ module.exports = class Game
               active: false
               players: []
           ]
+          obstacles: []
+          antiobstacles: []
+          started: false
 
       while @state.time < t
         @state.time++
@@ -174,6 +180,16 @@ module.exports = class Game
         x: (rand() * width) + x0
         y: (rand() * height) + y0
 
+      for i in [1..@OBSTACLE_COUNT]
+        obstacle = randomPoint(
+          -@X_MAX,
+          -@Y_MAX,
+          @X_MAX*2,
+          @Y_MAX*2
+        )
+        obstacle.radius = rand()*10
+        @state.obstacles.push(obstacle)
+
       # Keep track of generated dots to avoid generating two nearby dots
       dots = []
 
@@ -181,11 +197,13 @@ module.exports = class Game
         hOffset = (teamIndex-1) * (@X_MAX)
         for player in team.players
           for i in [1..@DOTS_PER_PLAYER]
-            until dot? && dots.every((d)=> @_dist(dot,d) > 4)
+            until dot? and 
+                  dots.every((d) => @_dist(dot,d) > 4) and 
+                  @state.obstacles.every((o) => @_dist(dot,o) > o.radius)
               dot = randomPoint(
-                hOffset, 
-                -@Y_MAX, 
-                @X_MAX, 
+                hOffset,
+                -@Y_MAX,
+                @X_MAX,
                 @Y_MAX*2
               )
             dot.alive = true
@@ -237,7 +255,15 @@ module.exports = class Game
               player.dots[index].alive = false
               @state.updated = true
 
-      if x >= @X_MAX
+      for obstacle in @state.obstacles
+        if @_dist({x,y}, obstacle) < obstacle.radius and 
+           @state.antiobstacles.every((ao) => @_dist({x,y}, ao) > @ANTIOBSTACLE_RADIUS)
+          @state.antiobstacles.push({x,y})
+          delete state.fn
+          @state.updated = true
+
+      unless -@X_MAX <= x <= @X_MAX and 
+             -@Y_MAX <= y <= @Y_MAX
         delete @state.fn
         @state.updated = true
 
