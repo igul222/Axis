@@ -12,26 +12,31 @@ module.exports = class Game
     DOTS_PER_PLAYER: 2
     FN_ANIMATION_SPEED: 0.005 # graph units per ms
     DOT_RADIUS: 1
+    TURN_TIME: 60000 # ms
 
     constructor: ->
       @subscriberIds = []
       @subscriberCallbacks = {}
-      @playbackTime = Date.now()
+      @playbackTime = Math.round(Date.now())
       @lastFrameTime = null
       @animationRequestID = null
       @state = null
       @data =
+        t0: 0
         rand: Math.random()
-        moves: []
+        moves: {}
 
     ##########################
     # Moves / state generation
     ##########################
 
     pushMove: (move, agentId, time) ->
-      move.t = time || Date.now()
+      move.t = time || Math.round(Date.now())
       move.agentId = agentId
-      @data.moves.push(move)
+      offset = 0
+      offset += 1 while @data.moves[move.t + offset]
+      @data.moves[move.t + offset] = move
+      @data.t0 = move.t if @data.t0 == 0
       @_dataUpdateAll()
 
     # Add a player (with given id and name) to the team with fewer players.
@@ -63,7 +68,9 @@ module.exports = class Game
         @state = 
           updated: true
           playerId: playerId
-          time: -1
+          time: (@data.t0 - 1)
+          started: false
+          turnTime: @TURN_TIME
           teams: [
               active: true
               players: []
@@ -71,23 +78,27 @@ module.exports = class Game
               active: false
               players: []
           ]
-          started: false
 
       while @state.time < t
-        nextMove = _.find(@data.moves, (m) => m.t > @state.time)
-        dt = (if nextMove then Math.min(nextMove.t, t) else t) - @state.time
-        @state.time += dt
+        @state.time++
 
-        @_processCollisions(@state, dt) if @state.fn
+        if @state.started and !@state.fn
+          @state.turnTime--
+          if @state.turnTime <= 0
+            @state.turnTime += @TURN_TIME
+            @_advanceTurn()
 
-        # Apply move (if any) at t
-        if nextMove?.t == @state.time
+        @_processCollisions() if @state.fn
+
+        # Apply move (if any) at state.time
+        if @data.moves[@state.time]
           @state.updated = true
-          switch nextMove.type
-            when 'addPlayer'    then @_addPlayer(@state, nextMove)
-            when 'removePlayer' then @_removePlayer(@state, nextMove)
-            when 'start'        then @_start(@state, nextMove)
-            when 'fire'         then @_fire(@state, nextMove)
+          move = @data.moves[@state.time]
+          switch move.type
+            when 'addPlayer'    then @_addPlayer(move)
+            when 'removePlayer' then @_removePlayer(move)
+            when 'start'        then @_start(move)
+            when 'fire'         then @_fire(move)
 
       return @state
 
@@ -95,13 +106,13 @@ module.exports = class Game
     # Players
     #########
 
-    _addPlayer: (state, move) ->
-      return if state.started or move.agentId?
+    _addPlayer: (move) ->
+      return if @state.started or move.agentId?
 
-      if state.teams[0].players.length <= state.teams[1].players.length
-        team = state.teams[0]
+      if @state.teams[0].players.length <= @state.teams[1].players.length
+        team = @state.teams[0]
       else
-        team = state.teams[1]
+        team = @state.teams[1]
 
       team.players.push {
         id: move.playerId,
@@ -110,36 +121,39 @@ module.exports = class Game
         dots: []
       }
 
-    _removePlayer: (state, move) ->
+    _removePlayer: (move) ->
       return unless move.agentId == move.playerId
-      for team in state.teams
+      for team in @state.teams
         team.players = _.reject(team.players, (p) -> p.id == move.id)
 
     # Return the player with the given id, or undefined if none exists.
-    _getPlayer: (state, id) ->
-      players = _.flatten(_.pluck(state.teams, 'players'))
+    _getPlayer: (id) ->
+      players = _.flatten(_.pluck(@state.teams, 'players'))
       _.find(players, (p) -> p.id == id)
 
     ##########
     # Gameplay
     ##########
 
-    _start: (state, move) ->
+    _start: (move) ->
       return if move.agentId? or 
-                !@_getPlayer(state, move.playerId) or 
-                state.started
+                !@_getPlayer(move.playerId) or 
+                @state.started
 
-      state.started = true
-      @_generateInitialPositions(state)
+      @state.started = true
+      @_generateInitialPositions()
 
-      state.teams[0].active = true
-      state.teams[0].players[0].active = true
-      state.teams[0].players[0].dots[0].active = true
+      recursivelySetActive = (ary) ->
+        return unless ary?
+        ary[0].active = true
+        for item in ary
+          recursivelySetActive(item.players || item.dots || null)
+      recursivelySetActive(@state.teams)
 
-      for team, index in state.teams
+      for team, index in @state.teams
         for player in team.players
-          if (player.id == state.playerId)
-            state.flipped = index > 0
+          if (player.id == @state.playerId)
+            @state.flipped = index > 0
 
     _dist: (point1, point2) ->
       Math.sqrt(
@@ -148,7 +162,7 @@ module.exports = class Game
       )
 
     # Populate players with randomly positioned dots
-    _generateInitialPositions: (state) ->
+    _generateInitialPositions: ->
       rand = seed(@data.rand)
 
       randomPoint = (x0, y0, width, height) ->
@@ -158,7 +172,7 @@ module.exports = class Game
       # Keep track of generated dots to avoid generating two nearby dots
       dots = []
 
-      for team, teamIndex in state.teams
+      for team, teamIndex in @state.teams
         hOffset = (teamIndex-1) * (@X_MAX)
         for player in team.players
           for i in [1..@DOTS_PER_PLAYER]
@@ -175,16 +189,17 @@ module.exports = class Game
             player.dots.push(dot)
 
     # # Advance the game by one turn, updating team/player/dot active values
-    # advanceTurn: ->
-    #   recursivelyAdvance = (ary) ->
-    #     return unless ary?
-    #     for item,i in ary
-    #       if item.active
-    #         item.active = false
-    #         ary[(i+1) % ary.length].active = true
-    #         recursivelyAdvance(item.players || item.dots || null)
-    #         break
-    #   recursivelyAdvance(@state.teams)
+    _advanceTurn: ->
+      recursivelyAdvance = (ary) ->
+        return unless ary?
+        for item,i in ary
+          if item.active
+            item.active = false
+            ary[(i+1) % ary.length].active = true
+            recursivelyAdvance(item.players || item.dots || null)
+            break
+      recursivelyAdvance(@state.teams)
+      @state.updated = true
 
     # #attempt to make a move as the player, validate
     # moveAsPlayer: (id, move)->
@@ -197,46 +212,39 @@ module.exports = class Game
     #   player.active && player.team.active
 
     # Get the active team, player, and dot.
-    _getActive: (state) ->
-      team = _.find(state.teams, (x) -> x.active)
+    _getActive: ->
+      team = _.find(@state.teams, (x) -> x.active)
       player = _.find(team.players, (x) -> x.active)
       dot = _.find(player.dots, (x) -> x.active)
       {team, player, dot}
 
-    _fire: (state, move) ->
-      active = @_getActive(state)
+    _fire: (move) ->
+      active = @_getActive()
       return unless move.agentId == active.player.id
 
       compiledFunction = math.compile(move.expression)
-      state.fn = {
+      @state.fn = {
         expression: move.expression,
         evaluate: (x) -> compiledFunction.eval(x: x - active.dot.x) - compiledFunction.eval(x: 0) + active.dot.y,
         origin: {x: active.dot.x, y: active.dot.y},
-        startTime: state.time
+        startTime: @state.time
       }
 
-    _processCollisions: (state, dt) ->
-      # Don't process collisions for times before the function was fired
-      dt = Math.min(dt, state.time - state.fn.startTime)
+    _processCollisions: ->
+      x = @state.fn.origin.x + @FN_ANIMATION_SPEED*(@state.time - @state.fn.startTime)
+      y = @state.fn.evaluate(x)
 
-      x0 = state.fn.origin.x + @FN_ANIMATION_SPEED*((state.time-dt)-state.fn.startTime)
-      xMax = state.fn.origin.x + @FN_ANIMATION_SPEED*(state.time-state.fn.startTime)
-      dx = 0.05
+      active = @_getActive()
+      for team in @state.teams
+        for player in team.players
+          for dot, index in player.dots
+            if dot.alive and dot != active.dot and @_dist({x,y}, dot) < @DOT_RADIUS
+              player.dots[index].alive = false
+              @state.updated = true
 
-      active = @_getActive(state)
-      for x in [x0 .. xMax] by dx
-        y = state.fn.evaluate(x)
-
-        for team in state.teams
-          for player in team.players
-            for dot, index in player.dots
-              if dot.alive and dot != active.dot and @_dist({x,y}, dot) < @DOT_RADIUS
-                player.dots[index].alive = false
-                state.updated = true
-
-      if xMax >= @X_MAX
-        delete state.fn
-        state.updated = true
+      if x >= @X_MAX
+        delete @state.fn
+        @state.updated = true
 
     ######################
     # Sync / subscriptions
@@ -270,13 +278,13 @@ module.exports = class Game
 
     # Fire the subscribed callback with the given id only.
     _dataUpdate: (subscriberId) ->
-      _.extend(@data, currentTime: Date.now())
+      _.extend(@data, currentTime: Math.round(Date.now()))
       @subscriberCallbacks[subscriberId](@data)
 
     # Start animating, calling callback with a game state object every frame.
     startAnimatingForPlayer: (playerId, callback) ->
       animate = (t) =>
-        @playbackTime += (t - @lastFrameTime)
+        @playbackTime += Math.round(t - @lastFrameTime)
         @lastFrameTime = t
 
         @generateStateAtTimeForPlayer(@playbackTime, playerId)

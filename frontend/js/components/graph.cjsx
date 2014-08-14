@@ -2,7 +2,6 @@ Game  = require('../../../shared/game.coffee')
 React = require('react/addons')
 _     = require('lodash')
 
-
 module.exports = React.createClass(
   AXIS_COLOR: 'rgb(0,0,0)'
   FUNCTION_COLOR: 'rgb(11,125,150)'
@@ -59,7 +58,8 @@ module.exports = React.createClass(
     for team in @props.gameState.teams
       for player in team.players
         for dot in player.dots
-          @drawDot(context, dot)
+          active = dot.active and player.active and team.active
+          @drawDot(context, dot, active)
           @drawText(context, player.name, {x: dot.x, y: dot.y + 1})
 
 
@@ -81,7 +81,7 @@ module.exports = React.createClass(
       @_toPx(Game::Y_MAX - y),
     ]
 
-  drawDot: (context, dot) ->
+  drawDot: (context, dot, dotActive) ->
     context.beginPath()
     context.arc(
       @_g2c(dot.x, dot.y)..., 
@@ -90,7 +90,7 @@ module.exports = React.createClass(
       2*Math.PI
     )
     context.lineWidth = @DOT_THICKNESS
-    if dot.active
+    if dotActive
       context.strokeStyle = @ACTIVE_DOT_COLOR
     else if !dot.alive
       context.strokeStyle = @DEAD_DOT_COLOR

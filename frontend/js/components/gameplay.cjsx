@@ -23,5 +23,7 @@ module.exports = React.createClass(
       <input type="text" valueLink={this.linkState('expression')} />
       <input type="submit" value="Fire" onClick={@fire} />
 
+      <p>Turn time: {@props.data.gameState.turnTime}</p>
+
     </div>
 )

@@ -4,15 +4,17 @@ jsdom = require('jsdom').jsdom
 
 module.exports = 
   generateGame: (moves = []) ->
+    newMoves = {}
     for move, i in moves
-      moves[i] = _.defaults(move, {t: i, agentId: null})
+      newMoves[i] = _.defaults(move, {t: i, agentId: null})
 
     game = new Game()
 
     game.replaceData(
-      currentTime: moves.length,
+      t0: 0
+      currentTime: moves.length - 1,
       rand: 0.5,
-      moves: moves
+      moves: newMoves
     )
 
     game.generateStateAtTimeForPlayer(moves.length - 1, null)
