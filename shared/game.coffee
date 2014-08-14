@@ -206,16 +206,6 @@ module.exports = class Game
       recursivelyAdvance(@state.teams)
       @state.updated = true
 
-    # #attempt to make a move as the player, validate
-    # moveAsPlayer: (id, move)->
-    #   if validateMoveAsPlayer(id, move)
-    #     getActiveDotForPlayer(id).push(move)
-
-    # #validate whether the player is active and can make the proposed move
-    # validateMoveAsPlayer: (id, move) ->
-    #   player = getPlayer(id)
-    #   player.active && player.team.active
-
     # Get the active team, player, and dot.
     _getActive: ->
       team = _.find(@state.teams, (x) -> x.active)
