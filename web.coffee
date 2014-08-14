@@ -27,8 +27,8 @@ app.get '/*', (req, res) ->
 require('./backend/server.coffee')(io)
 
 # Start the server
-http.listen app.get('port'), (err) ->
+http.listen app.get('port'), '0.0.0.0', (err) ->
   if err
     console.log 'Fatal error: '+err
   else
-    console.log 'Express server listening on port ' + app.get('port')
+    console.log 'Express server listening on 0.0.0.0:' + app.get('port')
