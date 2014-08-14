@@ -84,9 +84,14 @@ module.exports = class Game
 
         if @state.started and !@state.fn
           @state.turnTime--
+          
           if @state.turnTime <= 0
             @state.turnTime += @TURN_TIME
             @_advanceTurn()
+
+          if @state.turnTime % 1000 == 0
+            @state.updated = true
+            @state.displayTurnTime = @state.turnTime / 1000
 
         @_processCollisions() if @state.fn
 

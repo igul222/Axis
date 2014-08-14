@@ -14,9 +14,10 @@ module.exports = React.createClass(
   TEXT_COLOR: 'rgb(15,15,15)'
 
   componentDidMount: ->
-    context = @getDOMNode().getContext("2d")
     @lastAnimationTimestamp = 0
-    requestAnimationFrame @tick
+    @tickID = requestAnimationFrame @tick
+    
+    context = @getDOMNode().getContext("2d")
     @paint(context)
 
   tick: (animationTimestamp) ->
@@ -26,7 +27,10 @@ module.exports = React.createClass(
     if @props.gameState.fn
       @extendFunction(dt)
 
-    requestAnimationFrame @tick
+    @tickID = requestAnimationFrame @tick
+
+  componentWillUnmount: ->
+    cancelAnimationFrame @tickID
 
   componentDidUpdate: ->
     context = @getDOMNode().getContext("2d")

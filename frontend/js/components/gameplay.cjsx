@@ -5,12 +5,12 @@ client = require('../client.coffee')
 
 module.exports = React.createClass(
   mixins: [React.addons.LinkedStateMixin]
+
   getInitialState: ->
     {expression: 'sin(x)'}
 
   fire: ->
     client.pushMove(Game.fire(@state.expression))
-
 
   render: ->
     <div>
@@ -23,7 +23,7 @@ module.exports = React.createClass(
       <input type="text" valueLink={this.linkState('expression')} />
       <input type="submit" value="Fire" onClick={@fire} />
 
-      <p>Turn time: {@props.data.gameState.turnTime}</p>
+      <p id="turn-time">Turn time: {@props.data.gameState.displayTurnTime}</p>
 
     </div>
 )
