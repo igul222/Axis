@@ -11,8 +11,8 @@ less            = require('gulp-less')
 minifyCSS       = require('gulp-minify-css')
 sourcemaps      = require('gulp-sourcemaps')
 livereload      = require('tiny-lr')
-nodemon         = require('gulp-nodemon')
 path            = require('path')
+spawn           = require('child_process').spawn
 
 compileJS = (production) ->
   gutil.log 'Compiling js (production: '+production+')'
@@ -62,13 +62,7 @@ gulp.task 'default', ->
   lr = livereload()
   lr.listen(35729)
 
-  nodemon(
-    script: 'web.coffee',
-    ignore: ['public/compiled/**', 'frontend/**', 'node_modules/**']
-  ).on 'restart', -> setTimeout ->
-    gutil.log 'Live-reloading (Express restarted)'
-    lr.changed(body: {files: ['/']})
-  , 1000
+  runServer()
 
   gulp.watch ['./frontend/css/**/*'], (evt) ->
     compileCSS(false)
@@ -80,3 +74,19 @@ gulp.task 'default', ->
     relPath = path.relative(path.join(__dirname,'public'), evt.path)
     gutil.log 'Live-reloading ('+relPath+' modified)'
     lr.changed(body: {files: [relPath]})
+
+
+
+node = null
+
+# Starts the web server, stopping it if already running first
+runServer = ->
+  gutil.log 'Starting web server...'
+  node.kill() if node
+  node = spawn('coffee', ['web.coffee'], stdio: 'inherit')
+  node.on 'close', (code) ->
+    gutil.log 'Error detected, waiting for changes...' if code == 8
+
+# Clean up if an error goes unhandled.
+process.on 'exit', ->
+  node.kill() if node
