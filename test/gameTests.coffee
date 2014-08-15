@@ -1,6 +1,7 @@
 assert = require('assert')
 Game = require('../shared/game.coffee')
 helpers = require('./helpers.coffee')
+_ = require('lodash')
 
 describe 'Game', ->
 
@@ -21,10 +22,10 @@ describe 'Game', ->
       ])
 
       assert game.state.turnTime == 60000
-      game.generateStateAtTimeForPlayer(game.state.time + 1000)
-      assert game.state.turnTime == 59000
+      game.generateStateAtTimeForPlayer(game.state.time + 1)
+      assert game.state.turnTime == 59999
 
-    it 'should advance turns', =>
+    it 'should advance turns when turn time runs out', =>
       game = helpers.generateGame([
         Game.addPlayer(1, 'ishaan'),
         Game.addPlayer(2, 'zain'),
@@ -38,17 +39,30 @@ describe 'Game', ->
       assert game.state.teams[1].players[0].active
       assert game.state.teams[1].players[0].dots[0].active
 
-    it 'should advance turns when firing', =>
+    it 'should not decrement turn time while firing', =>
       game = helpers.generateGame([
         Game.addPlayer(1, 'ishaan'),
         Game.addPlayer(2, 'zain'),
         Game.start(2),
-        Game.fire('sin(x)')
+        _.assign(Game.fire('sin(x)'), agentId: 1)
       ])
 
-      game.generateStateAtTimeForPlayer(game.state.time + 60000)
+      oldTime = game.state.turnTime
+      game.generateStateAtTimeForPlayer(game.state.time + 1)
+      assert game.state.turnTime == oldTime
 
-      assert game.state.turnTime == 59999
+    it 'should advance turns after firing', =>
+      game = helpers.generateGame([
+        Game.addPlayer(1, 'ishaan'),
+        Game.addPlayer(2, 'zain'),
+        Game.start(2),
+        _.assign(Game.fire('sin(x)'), agentId: 1)
+      ])
+
+      while game.state.fn
+        game.generateStateAtTimeForPlayer(game.state.time + 1)
+
+      assert game.state.turnTime == 60000
       assert game.state.teams[1].active
       assert game.state.teams[1].players[0].active
       assert game.state.teams[1].players[0].dots[0].active

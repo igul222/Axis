@@ -244,6 +244,12 @@ module.exports = class Game
       }
 
     _processCollisions: ->
+      endFunction = =>
+        delete @state.fn
+        @_advanceTurn()
+        @state.turnTime = @TURN_TIME
+        @state.updated = true
+
       x = @state.fn.origin.x + @FN_ANIMATION_SPEED*(@state.time - @state.fn.startTime)
       y = @state.fn.evaluate(x)
 
@@ -256,16 +262,17 @@ module.exports = class Game
               @state.updated = true
 
       for obstacle in @state.obstacles
+        
         if @_dist({x,y}, obstacle) < obstacle.radius and 
            @state.antiobstacles.every((ao) => @_dist({x,y}, ao) > @ANTIOBSTACLE_RADIUS)
+          
           @state.antiobstacles.push({x,y})
-          delete state.fn
-          @state.updated = true
+          endFunction()
 
       unless -@X_MAX <= x <= @X_MAX and 
              -@Y_MAX <= y <= @Y_MAX
-        delete @state.fn
-        @state.updated = true
+
+        endFunction()
 
     ######################
     # Sync / subscriptions
