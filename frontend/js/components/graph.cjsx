@@ -166,11 +166,12 @@ module.exports = React.createClass(
 
     context.moveTo(@_g2c(x0, @props.gameState.fn.evaluate(x0))...)
 
-    dx = 1/@_toPx(10)
+    dx = 1/@_toPx(1)
 
     for x in [x0 .. xMax] by dx
       y = @props.gameState.fn.evaluate(x)
       context.lineTo(@_g2c(x, y)...)
+    context.lineTo(@_g2c(xMax, @props.gameState.fn.evaluate(xMax))...)
 
     context.stroke()
 
