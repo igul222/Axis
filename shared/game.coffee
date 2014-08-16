@@ -28,6 +28,7 @@ module.exports = class Game
         t0: 0
         rand: Math.random()
         moves: {}
+      @_resetState()
 
     ##########################
     # Moves / state generation
@@ -63,27 +64,30 @@ module.exports = class Game
     @fire: (expression) ->
       return {type: 'fire', expression: expression}
 
+    _resetState: (playerId = null) ->
+      @state = 
+        updated: true
+        playerId: playerId
+        time: (@data.t0 - 1)
+        started: false
+        turnTime: @TURN_TIME
+        teams: [
+            active: true
+            players: []
+          ,
+            active: false
+            players: []
+        ]
+        obstacles: []
+        antiobstacles: []
+        started: false
+
     # Updates @state to the given time and player, returning @state.
-    generateStateAtTimeForPlayer: (t, playerId) ->
+    generateStateAtTimeForPlayer: (t, playerId = null) ->
       # If @state and t >= @state.time, we can start from there. Otherwise
       # we need to replay from the beginning.
-      unless @state and t >= @state.time and playerId == @state.playerId
-        @state = 
-          updated: true
-          playerId: playerId
-          time: (@data.t0 - 1)
-          started: false
-          turnTime: @TURN_TIME
-          teams: [
-              active: true
-              players: []
-            ,
-              active: false
-              players: []
-          ]
-          obstacles: []
-          antiobstacles: []
-          started: false
+      @_resetState(playerId) unless @state and t >= @state.time and 
+                                    playerId == @state.playerId
 
       while @state.time < t
         @state.time++

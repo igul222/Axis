@@ -5,41 +5,92 @@ _ = require('lodash')
 
 describe 'Game', ->
 
-  describe '#generateStateAtTimeForPlayer(t, playerId)', =>
+  it 'should have a valid state object', ->
+    game = new Game()
+    assert game.state.started==false
+    assert game.state.teams?.length == 2
+    assert game.state.teams[0].players?.length == 0
 
-    it 'should return a state object', =>
-      state = new Game().generateStateAtTimeForPlayer(1, null)
-      assert state.time==1
-      assert state.started==false
-      assert state.teams?.length == 2
-      assert state.teams[0].players?.length == 0
+  it 'should have valid "active team/player/dot" tree', ->
+    game = helpers.generateGame([
+      Game.addPlayer(1, 'team1p1'),
+      Game.addPlayer(2, 'team2p1'),
+      Game.addPlayer(3, 'team1p2'),
+      Game.addPlayer(4, 'team2p2'),
+      Game.start(1)
+    ])
 
-    it 'should decrease turn time', =>
+    assert game.state.teams[0].active
+    assert !game.state.teams[1].active
+    for team in game.state.teams
+      assert team.players[0].active
+      assert !team.players[1].active
+      for player in team.players
+        assert player.dots[0].active
+        assert !player.dots[1].active
+
+  it 'should add players to state', ->
+    game = helpers.generateGame([Game.addPlayer(1, 'bob')])
+    assert game.state.teams[0].players[0].id == 1
+    assert game.state.teams[0].players[0].name == 'bob'
+
+    it 'should delete dots when a function intersects them', ->
+      game = helpers.generateGame([
+        Game.addPlayer(1, 'ishaan'),
+        Game.addPlayer(2, 'zain')
+        Game.start(2),
+      ])
+
+      dot1 = game.state.teams[0].players[0].dots[0]
+      dot1.x = -1
+      dot1.y = 0
+
+      dot2 = game.state.teams[1].players[0].dots[0]
+      dot2.x = 1
+      dot2.y = 0
+
+      game.pushMove(Game.fire('0'), 1, 3)
+      game.generateStateAtTimeForPlayer(3, null)
+
+      game.state.time += 1 / Game::FN_ANIMATION_SPEED
+      game._processCollisions()
+
+      assert game.state.teams[1].players[0].dots[0].alive
+
+      game.state.time += 1 / Game::FN_ANIMATION_SPEED
+      game._processCollisions()
+
+      assert !game.state.teams[1].players[0].dots[0].alive
+
+  describe '(turn advancement)', ->
+
+    it 'should decrement turnTime on each tick', ->
       game = helpers.generateGame([
         Game.addPlayer(1, 'ishaan'),
         Game.addPlayer(2, 'zain'),
         Game.start(2)
       ])
 
-      assert game.state.turnTime == 60000
+      oldTime = game.state.turnTime
       game.generateStateAtTimeForPlayer(game.state.time + 1)
-      assert game.state.turnTime == 59999
+      assert game.state.turnTime == oldTime - 1
 
-    it 'should advance turns when turn time runs out', =>
+    it 'should advance turns when turnTime reaches zero', ->
       game = helpers.generateGame([
         Game.addPlayer(1, 'ishaan'),
         Game.addPlayer(2, 'zain'),
         Game.start(2)
       ])
 
-      game.generateStateAtTimeForPlayer(game.state.time + 60000)
+      game.state.turnTime = 1
+      game.generateStateAtTimeForPlayer(game.state.time + 1)
 
-      assert game.state.turnTime == 60000
+      assert game.state.turnTime == Game::TURN_TIME
       assert game.state.teams[1].active
       assert game.state.teams[1].players[0].active
       assert game.state.teams[1].players[0].dots[0].active
 
-    it 'should not decrement turn time while firing', =>
+    it 'should not decrement turnTime while firing', ->
       game = helpers.generateGame([
         Game.addPlayer(1, 'ishaan'),
         Game.addPlayer(2, 'zain'),
@@ -51,7 +102,7 @@ describe 'Game', ->
       game.generateStateAtTimeForPlayer(game.state.time + 1)
       assert game.state.turnTime == oldTime
 
-    it 'should advance turns after firing', =>
+    it 'should advance turns after firing', ->
       game = helpers.generateGame([
         Game.addPlayer(1, 'ishaan'),
         Game.addPlayer(2, 'zain'),
@@ -66,56 +117,3 @@ describe 'Game', ->
       assert game.state.teams[1].active
       assert game.state.teams[1].players[0].active
       assert game.state.teams[1].players[0].dots[0].active
-
-    it 'should start with a valid active state tree', =>
-      game = helpers.generateGame([
-        Game.addPlayer(1, 'team1p1'),
-        Game.addPlayer(2, 'team2p1'),
-        Game.addPlayer(3, 'team1p2'),
-        Game.addPlayer(4, 'team2p2'),
-        Game.start(1)
-      ])
-
-      assert game.state.teams[0].active
-      assert !game.state.teams[1].active
-      for team in game.state.teams
-        assert team.players[0].active
-        assert !team.players[1].active
-        for player in team.players
-          assert player.dots[0].active
-          assert !player.dots[1].active
-
-  describe 'adding players', =>
-
-    it 'should add a player to game state', =>
-      game = helpers.generateGame([Game.addPlayer(1, 'bob')])
-      assert game.state.teams[0].players[0].id == 1
-      assert game.state.teams[0].players[0].name == 'bob'
-
-  describe '#_processCollisions', =>
-
-    it 'should delete dots at f(state.time)', =>
-      game = helpers.generateGame([
-        Game.addPlayer(1, 'ishaan'),
-        Game.addPlayer(2, 'zain')
-        Game.start(2),
-      ])
-
-      game.state.teams[0].players[0].dots[0].x = -1
-      game.state.teams[0].players[0].dots[0].y = 0
-
-      game.state.teams[1].players[0].dots[0].x = 1
-      game.state.teams[1].players[0].dots[0].y = 0
-
-      game.pushMove(Game.fire('0'), 1, 3)
-      game.generateStateAtTimeForPlayer(3, null)
-
-      game.state.time += 1 / Game::FN_ANIMATION_SPEED
-      game._processCollisions()
-
-      assert game.state.teams[1].players[0].dots[0].alive
-
-      game.state.time += 1 / Game::FN_ANIMATION_SPEED
-      game._processCollisions()
-
-      assert !game.state.teams[1].players[0].dots[0].alive
