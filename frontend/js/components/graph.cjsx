@@ -160,16 +160,17 @@ module.exports = React.createClass(
     context.beginPath()
     context.lineWidth = @FUNCTION_THICKNESS
     context.strokeStyle = @FUNCTION_COLOR
+    flip = if @props.gameState.fn.origin.x > 0 then -1 else 1
 
-    x0   = @props.gameState.fn.origin.x + (Game::FN_ANIMATION_SPEED*t0)
-    xMax = @props.gameState.fn.origin.x + (Game::FN_ANIMATION_SPEED*tMax)
+    x0   = @props.gameState.fn.origin.x + flip*(Game::FN_ANIMATION_SPEED*t0)
+    xMax = @props.gameState.fn.origin.x + flip*(Game::FN_ANIMATION_SPEED*tMax)
 
     context.moveTo(@_g2c(x0, @props.gameState.fn.evaluate(x0))...)
 
     dx = 1/@_toPx(1)
 
-    for x in [x0 .. xMax] by dx
-      y = @props.gameState.fn.evaluate(x)
+    for x in [x0 .. xMax] by flip*dx
+        y = @props.gameState.fn.evaluate(x)
       context.lineTo(@_g2c(x, y)...)
     context.lineTo(@_g2c(xMax, @props.gameState.fn.evaluate(xMax))...)
 
