@@ -42,6 +42,7 @@ module.exports = class Game
       @data.moves[move.t + offset] = move
       @data.t0 = move.t if @data.t0 == 0
       @_dataUpdateAll()
+      @_resetState()
 
     # Add a player (with given id and name) to the team with fewer players.
     # Only the server can issue this move.
