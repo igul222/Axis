@@ -240,10 +240,13 @@ module.exports = class Game
       return unless move.agentId == active.player.id
 
       compiledFunction = math.compile(move.expression)
+
+      flip = if active.dot.x > 0 then -1 else 1
+
       @state.fn = {
         expression: move.expression,
-        evaluate: (x) -> compiledFunction.eval(x: x - active.dot.x) - compiledFunction.eval(x: 0) + active.dot.y,
         origin: {x: active.dot.x, y: active.dot.y},
+        evaluate: (x) -> compiledFunction.eval(x: flip*(x - active.dot.x)) - compiledFunction.eval(x: 0) + active.dot.y,
         startTime: @state.time
       }
 
@@ -254,7 +257,8 @@ module.exports = class Game
         @state.turnTime = @TURN_TIME
         @state.updated = true
 
-      x = @state.fn.origin.x + @FN_ANIMATION_SPEED*(@state.time - @state.fn.startTime)
+      flip = if @state.fn.origin.x > 0 then -1 else 1
+      x = @state.fn.origin.x + flip*@FN_ANIMATION_SPEED*(@state.time - @state.fn.startTime)
       y = @state.fn.evaluate(x)
 
       active = @_getActive()
