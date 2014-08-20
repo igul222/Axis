@@ -226,7 +226,12 @@ module.exports = class Game
             ary[(i+1) % ary.length].active = true
             recursivelyAdvance(item.players || item.dots || null)
             break
+
       recursivelyAdvance(@state.teams)
+      currentDot = @_getActive().dot
+      while(!@_getActive().dot.alive)
+        recursivelyAdvance(@state.teams)
+        break if @_getActive().dot == currentDot
       @state.updated = true
 
     # Get the active team, player, and dot.
