@@ -3,22 +3,34 @@ React = require('react/addons')
 _     = require('lodash')
 
 module.exports = React.createClass(
-  AXIS_COLOR: 'rgb(0,0,0)'
-  FUNCTION_COLOR: 'rgb(11,125,150)'
+  AXIS_COLOR:            'rgb(245,255,245)'
+  FUNCTION_COLOR:        'rgb(245,255,245)'
+  DOT_COLOR:             'rgb(245,255,245)'
+  ACTIVE_DOT_COLOR:      'rgb(245,255,245)'
+  OBSTACLE_STROKE_COLOR: 'rgb(245,255,245)'
+  OBSTACLE_FILL_COLOR:   'rgba(245,255,245,0.05)'
+
+  DEAD_DOT_COLOR:        'rgb(150,150,150)'
+
   FUNCTION_THICKNESS: 1 # px
-  DOT_THICKNESS: 3 # px
-  DOT_COLOR: 'rgb(150,0,0)'
-  ACTIVE_DOT_COLOR: 'rgb(0,50,150)'
-  DEAD_DOT_COLOR: 'rgb(150,150,150)'
-  TEXT_FONT: '20px Helvetica Neue'
-  TEXT_COLOR: 'rgb(15,15,15)'
+
+  DOT_THICKNESS: 1 # px
+
+  TEXT_FONT: '14px Monaco'
+  TEXT_COLOR: 'rgb(245,255,245)'
+
+  GLOW_COLOR: 'rgb(0,255,0)'
+  GLOW_RADIUS: 5
+
+
+
+  CANVAS_WIDTH: 800 # px
 
   componentDidMount: ->
     @lastAnimationTimestamp = 0
     @tickID = requestAnimationFrame @tick
     
-    context = @getDOMNode().getContext("2d")
-    @paint(context)
+    @paint(@getContext())
 
   tick: (animationTimestamp) ->
     dt = animationTimestamp - @lastAnimationTimestamp
@@ -33,17 +45,23 @@ module.exports = React.createClass(
     cancelAnimationFrame @tickID
 
   componentDidUpdate: ->
-    context = @getDOMNode().getContext("2d")
+    context = @getContext()
     context.clearRect(
       0, 
       0, 
-      @props.canvasWidth, 
+      @CANVAS_WIDTH, 
       @_canvasHeight()
     )
     @paint(context)
 
+  getContext: ->
+    @getDOMNode().querySelector('canvas').getContext('2d')
+
   paint: (context) ->
     context.save()
+
+    context.shadowColor = @GLOW_COLOR;
+    context.shadowBlur = @GLOW_RADIUS;
 
     # Draw the axes
     context.beginPath()
@@ -76,7 +94,7 @@ module.exports = React.createClass(
 
   # Convert game units to canvas pixels
   _toPx: (units) ->
-    units * (0.5 * @props.canvasWidth / Game::X_MAX)
+    units * (0.5 * @CANVAS_WIDTH / Game::X_MAX)
 
   # Returns the canvas height in pixels
   _canvasHeight: ->
@@ -108,6 +126,7 @@ module.exports = React.createClass(
     context.stroke()
 
   drawAntiObstacle: (context, ao)->
+    context.save()
     context.beginPath()
     context.arc(
       @_g2c(ao.x, ao.y)..., 
@@ -115,18 +134,22 @@ module.exports = React.createClass(
       0, 
       2*Math.PI
     )
-    context.lineWidth = @DOT_THICKNESS
-    context.strokeStyle = "white"
-    context.fillStyle = "white"
 
-    context.fill()
-    context.stroke()
+    context.clip()
+    context.clearRect(
+      0, 
+      0, 
+      @CANVAS_WIDTH, 
+      @_canvasHeight()
+    )
+
+    context.restore()
 
   drawObstacle: (context, obstacle) ->
     context.beginPath()
-    
-    context.fillStyle = "black"
-    context.strokeStyle = "black"
+
+    context.fillStyle = @OBSTACLE_FILL_COLOR
+    context.strokeStyle = @OBSTACLE_STROKE_COLOR
 
     context.arc(
       @_g2c(obstacle.x, obstacle.y)...,
@@ -140,15 +163,16 @@ module.exports = React.createClass(
 
   drawText: (context, text, origin) ->
     context.font = @TEXT_FONT
+    context.textAlign = 'center'
     context.fillStyle = @TEXT_COLOR
-    context.fillText(text, @_g2c(origin.x, origin.y)...)
+    context.fillText(text.toUpperCase(), @_g2c(origin.x, origin.y)...)
 
   drawEntireFunction: (context) ->
     @tMax = @props.gameState.time - @props.gameState.fn.startTime
     @drawFunctionSegment(context, 0, @tMax)
 
   extendFunction: (dt) ->
-    context = @getDOMNode().getContext("2d")
+    context = @getContext()
 
     context.save()
     @drawFunctionSegment(context, @tMax, @tMax + dt)
@@ -177,9 +201,10 @@ module.exports = React.createClass(
     context.stroke()
 
   render: ->
-    <canvas
-      style={background_color: "black"}
-      width={@props.canvasWidth}
-      height={@_canvasHeight()}
-    />
+    <div id='canvasWrapper'>
+      <canvas
+        width={@CANVAS_WIDTH}
+        height={@_canvasHeight()}
+      />
+    </div>
 )

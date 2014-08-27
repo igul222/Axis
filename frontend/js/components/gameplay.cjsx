@@ -16,7 +16,6 @@ module.exports = React.createClass(
     <div>
       <Graph
         gameState={@props.data.gameState}
-        canvasWidth={800}
       />
       
       <p>Function:</p>
