@@ -22,8 +22,6 @@ module.exports = React.createClass(
   GLOW_COLOR: 'rgb(0,255,0)'
   GLOW_RADIUS: 5
 
-
-
   CANVAS_WIDTH: 800 # px
 
   componentDidMount: ->

@@ -25,7 +25,7 @@ module.exports = class Game
       @animationRequestID = null
       @state = null
       @data =
-        t0: 0
+        t0: Math.round(Date.now())
         rand: Math.random()
         moves: {}
       @_resetState()
