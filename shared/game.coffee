@@ -40,9 +40,8 @@ module.exports = class Game
       offset = 0
       offset += 1 while @data.moves[move.t + offset]
       @data.moves[move.t + offset] = move
-      @data.t0 = move.t if @data.t0 == 0
+      @data.t0 = _.sortBy(@data.moves, (move, t) -> t)[0].t
       @_dataUpdateAll()
-      @_resetState()
 
     # Add a player (with given id and name) to the team with fewer players.
     # Only the server can issue this move.
@@ -87,8 +86,9 @@ module.exports = class Game
     generateStateAtTimeForPlayer: (t, playerId = null) ->
       # If @state and t >= @state.time, we can start from there. Otherwise
       # we need to replay from the beginning.
-      @_resetState(playerId) unless @state and t >= @state.time and 
-                                    playerId == @state.playerId
+
+      unless @state and t >= @state.time and playerId == @state.playerId
+        @_resetState(playerId)
 
       while @state.time < t
         @state.time++
@@ -115,6 +115,7 @@ module.exports = class Game
             when 'removePlayer' then @_removePlayer(move)
             when 'start'        then @_start(move)
             when 'fire'         then @_fire(move)
+
 
       return @state
 
