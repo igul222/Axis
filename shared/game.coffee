@@ -140,7 +140,7 @@ module.exports = class Game
     _removePlayer: (move) ->
       return unless move.agentId == move.playerId
       for team in @state.teams
-        team.players = _.reject(team.players, (p) -> p.id == move.id)
+        team.players = _.reject(team.players, (p) -> p.id == move.playerId)
 
     # Return the player with the given id, or undefined if none exists.
     _getPlayer: (id) ->
@@ -331,7 +331,6 @@ module.exports = class Game
 
         @generateStateAtTimeForPlayer(@playbackTime, playerId)
         if @state.updated
-          console.log 'sending callback'
           callback(@state)
           @state.updated = false
 

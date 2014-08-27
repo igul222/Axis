@@ -34,33 +34,14 @@ describe 'Game', ->
     assert game.state.teams[0].players[0].id == 1
     assert game.state.teams[0].players[0].name == 'bob'
 
-    it 'should delete dots when a function intersects them', ->
-      game = helpers.generateGame([
-        Game.addPlayer(1, 'ishaan'),
-        Game.addPlayer(2, 'zain')
-        Game.start(2),
-      ])
+  it 'should remove players from state', ->
+    game = helpers.generateGame([
+      Game.addPlayer(1, 'bob'),
+      _.merge(Game.removePlayer(1), agentId: 1)
+    ])
 
-      dot1 = game.state.teams[0].players[0].dots[0]
-      dot1.x = -1
-      dot1.y = 0
-
-      dot2 = game.state.teams[1].players[0].dots[0]
-      dot2.x = 1
-      dot2.y = 0
-
-      game.pushMove(Game.fire('0'), 1, 3)
-      game.generateStateAtTimeForPlayer(3, null)
-
-      game.state.time += 1 / Game::FN_ANIMATION_SPEED
-      game._processCollisions()
-
-      assert game.state.teams[1].players[0].dots[0].alive
-
-      game.state.time += 1 / Game::FN_ANIMATION_SPEED
-      game._processCollisions()
-
-      assert !game.state.teams[1].players[0].dots[0].alive
+    assert game.state.teams[0].players.length == 0
+    assert game.state.teams[1].players.length == 0
 
   describe '(turn advancement)', ->
 
