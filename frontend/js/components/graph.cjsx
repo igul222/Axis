@@ -190,7 +190,7 @@ module.exports = React.createClass(
     context.moveTo(@_g2c(x0, @props.gameState.fn.evaluate(x0))...)
 
     dx = 1/@_toPx(1)
-    console.log '('+t0+', '+tMax+') -> ('+x0+', '+xMax+') by '+dx
+
     for x in [x0 .. xMax] by flip*dx
       y = @props.gameState.fn.evaluate(x)
       context.lineTo(@_g2c(x, y)...)

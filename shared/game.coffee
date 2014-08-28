@@ -116,7 +116,6 @@ module.exports = class Game
             when 'start'        then @_start(move)
             when 'fire'         then @_fire(move)
 
-
       return @state
 
     #########
@@ -140,8 +139,17 @@ module.exports = class Game
 
     _removePlayer: (move) ->
       return unless move.agentId == move.playerId
-      for team in @state.teams
-        team.players = _.reject(team.players, (p) -> p.id == move.playerId)
+
+      if @state.started
+        for team in @state.teams
+          for player in team.players
+            if player.id == move.playerId
+              for dot in player.dots
+                dot.alive = false
+                @_advanceTurn() if dot.active
+      else
+        for team in @state.teams
+          team.players = _.reject(team.players, (p) -> p.id == move.playerId)
 
     # Return the player with the given id, or undefined if none exists.
     _getPlayer: (id) ->
@@ -229,10 +237,14 @@ module.exports = class Game
             break
 
       recursivelyAdvance(@state.teams)
+
+      # If the new dot is dead, keep advancing.
       currentDot = @_getActive().dot
-      while(!@_getActive().dot.alive)
+      until @_getActive().dot.alive
         recursivelyAdvance(@state.teams)
         break if @_getActive().dot == currentDot
+
+      @state.turnTime = @TURN_TIME
       @state.updated = true
 
     # Get the active team, player, and dot.
