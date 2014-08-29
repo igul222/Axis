@@ -4,9 +4,9 @@ jsdom = require('jsdom').jsdom
 
 module.exports = 
   generateGame: (moves = []) ->
-    newMoves = {}
+    newMoves = []
     for move, i in moves
-      newMoves[i] = _.defaults(move, {t: i, agentId: null})
+      newMoves.push(_.defaults(move, {t: i, agentId: null}))
 
     game = new Game()
 
@@ -16,6 +16,7 @@ module.exports =
       rand: 0.5,
       moves: newMoves
     )
+    game._resetState()
 
     game.generateStateAtTimeForPlayer(moves.length - 1, null)
     return game

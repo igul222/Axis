@@ -27,7 +27,7 @@ module.exports = class Game
       @data =
         t0: Math.round(Date.now())
         rand: Math.random()
-        moves: {}
+        moves: []
       @_resetState()
 
     ##########################
@@ -37,11 +37,12 @@ module.exports = class Game
     pushMove: (move, agentId, time) ->
       move.t = time || Math.round(Date.now())
       move.agentId = agentId
-      offset = 0
-      offset += 1 while @data.moves[move.t + offset]
-      @data.moves[move.t + offset] = move
-      @data.t0 = _.sortBy(@data.moves, (move, t) -> t)[0].t
+
+      @data.moves.push(move)
+      @data.t0 = @data.moves[0].t
+
       @_dataUpdateAll()
+      @_resetState()
 
     # Add a player (with given id and name) to the team with fewer players.
     # Only the server can issue this move.
@@ -66,11 +67,16 @@ module.exports = class Game
 
     _resetState: (playerId = null) ->
       @state = 
-        updated: true
         playerId: playerId
         time: (@data.t0 - 1)
+        nextMove: 0
+        nextMoveTime: @data.moves[0]?.t
+
+        updated: true
         started: false
-        turnTime: @TURN_TIME
+        turnTime: @TURN_TIME + 1
+        obstacles: []
+        antiobstacles: []
         teams: [
             active: true
             players: []
@@ -78,43 +84,50 @@ module.exports = class Game
             active: false
             players: []
         ]
-        obstacles: []
-        antiobstacles: []
-        started: false
 
     # Updates @state to the given time and player, returning @state.
     generateStateAtTimeForPlayer: (t, playerId = null) ->
       # If @state and t >= @state.time, we can start from there. Otherwise
       # we need to replay from the beginning.
-
       unless @state and t >= @state.time and playerId == @state.playerId
         @_resetState(playerId)
 
       while @state.time < t
         @state.time++
 
-        if @state.started and !@state.fn
-          @state.turnTime--
-          
-          if @state.turnTime <= 0
-            @state.turnTime += @TURN_TIME
-            @_advanceTurn()
+        if @state.started
 
-          if @state.turnTime % 1000 == 0
-            @state.updated = true
-            @state.displayTurnTime = @state.turnTime / 1000
+          if @state.fn
+            @_processCollisions()
+          else
+            # Advance turn time
+            @state.turnTime--
 
-        @_processCollisions() if @state.fn
+            if @state.turnTime == 0
+              @_advanceTurn()
+
+            if @state.turnTime % 1000 == 0
+              @state.updated = true
 
         # Apply move (if any) at state.time
-        if @data.moves[@state.time]
-          @state.updated = true
-          move = @data.moves[@state.time]
+
+        if @state.nextMoveTime == @state.time
+          move = @data.moves[@state.nextMove]
+
+          if @state.nextMove + 1 < @data.moves.length
+            @state.nextMove += 1
+            @state.nextMoveTime = @data.moves[@state.nextMove].t
+          else
+            @state.nextMove = null
+            @state.nextMoveTime = null
+
           switch move.type
             when 'addPlayer'    then @_addPlayer(move)
             when 'removePlayer' then @_removePlayer(move)
             when 'start'        then @_start(move)
             when 'fire'         then @_fire(move)
+
+          @state.updated = true
 
       return @state
 
@@ -262,34 +275,37 @@ module.exports = class Game
 
       flip = if active.dot.x > 0 then -1 else 1
 
+      yTranslate = active.dot.y - compiledFunction.eval(x: 0)
+
       @state.fn = {
-        expression: move.expression,
-        origin: {x: active.dot.x, y: active.dot.y},
-        evaluate: (x) -> compiledFunction.eval(x: flip*(x - active.dot.x)) - compiledFunction.eval(x: 0) + active.dot.y,
+        expression: move.expression
+        origin: {x: active.dot.x, y: active.dot.y}
+        evaluate: (x) ->
+          compiledFunction.eval(x: flip*(x - active.dot.x)) + yTranslate
         startTime: @state.time
       }
 
     _processCollisions: ->
       endFunction = =>
-        delete @state.fn
+        @state.fn = null
         @_advanceTurn()
         @state.turnTime = @TURN_TIME
         @state.updated = true
 
-      flip = if @state.fn.origin.x > 0 then -1 else 1
+      flip = if @state.fn.origin.x > 0 then 1 else
       x = @state.fn.origin.x + flip*@FN_ANIMATION_SPEED*(@state.time - @state.fn.startTime)
       y = @state.fn.evaluate(x)
 
-      active = @_getActive()
       for team in @state.teams
         for player in team.players
-          for dot, index in player.dots
-            if dot.alive and dot != active.dot and @_dist({x,y}, dot) < @DOT_RADIUS
-              player.dots[index].alive = false
+          for dot in player.dots
+            if !(dot.active and player.active and team.active) and
+               dot.alive and
+               @_dist({x,y}, dot) < @DOT_RADIUS
+              dot.alive = false
               @state.updated = true
 
       for obstacle in @state.obstacles
-        
         if @_dist({x,y}, obstacle) < obstacle.radius and 
            @state.antiobstacles.every((ao) => @_dist({x,y}, ao) > @ANTIOBSTACLE_RADIUS)
           
@@ -298,7 +314,6 @@ module.exports = class Game
 
       unless -@X_MAX <= x <= @X_MAX and 
              -@Y_MAX <= y <= @Y_MAX
-
         endFunction()
 
     ######################
