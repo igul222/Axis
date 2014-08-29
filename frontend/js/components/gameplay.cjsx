@@ -9,8 +9,9 @@ module.exports = React.createClass(
   getInitialState: ->
     {expression: 'sin(x)'}
 
-  fire: ->
+  fire: (evt) ->
     client.pushMove(Game.fire(@state.expression))
+    evt.preventDefault()
 
   render: ->
     <div>
