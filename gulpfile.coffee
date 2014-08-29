@@ -13,6 +13,7 @@ sourcemaps      = require('gulp-sourcemaps')
 livereload      = require('tiny-lr')
 path            = require('path')
 spawn           = require('child_process').spawn
+mocha           = require('gulp-mocha')
 
 compileJS = (production) ->
   gutil.log 'Compiling js (production: '+production+')'
@@ -57,7 +58,7 @@ compile = ->
 gulp.task 'compile', compile
 gulp.task 'heroku:production', compile
 
-# For development: starts web server and JS/CSS watch+compile+livereload
+# For development: starts web server and JS/CSS watch + compile + livereload
 gulp.task 'default', ->
   compileJS(false)
   compileCSS(false)
@@ -78,8 +79,6 @@ gulp.task 'default', ->
     gutil.log 'Live-reloading ('+relPath+' modified)'
     lr.changed(body: {files: [relPath]})
 
-
-
 node = null
 
 # Starts the web server, stopping it if already running first
@@ -93,3 +92,19 @@ runServer = ->
 # Clean up if an error goes unhandled.
 process.on 'exit', ->
   node.kill() if node
+
+gulp.task 'test', ->
+  runTests = ->
+      lines = process.stdout.getWindowSize()[1]
+      console.log('') for i in [1..lines]
+      gulp.src('./test/**/*', read: false)
+        .pipe(mocha())
+
+  runTests()
+  gulp.watch [
+    './frontend/js/**/*',
+    './shared/**/*',
+    './backend/**/*',
+    './test/**/*'
+  ], (evt) ->
+    runTests()
