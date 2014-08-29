@@ -16,7 +16,7 @@ if app.get('env')=='development'
   app.use require('morgan')('dev') # logger
   app.use require('connect-livereload')()
 else 
-  app.use require('morgan')
+  app.use require('morgan')('default')
 
 # Serve index.jade for all routes
 app.set 'views', __dirname + '/backend'

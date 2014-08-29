@@ -50,9 +50,12 @@ compileCSS = (production) ->
       .pipe(sourcemaps.write())
       .pipe(gulp.dest('./public/compiled'))
 
-gulp.task 'compile', ->
+compile = ->
   compileJS(true)
   compileCSS(true)
+
+gulp.task 'compile', compile
+gulp.task 'heroku:production', compile
 
 # For development: starts web server and JS/CSS watch+compile+livereload
 gulp.task 'default', ->
