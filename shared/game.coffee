@@ -65,6 +65,10 @@ module.exports = class Game
     @fire: (expression) ->
       return {type: 'fire', expression: expression}
 
+    # Set the location of dot at the given path. For testing use only.
+    @setDotLocation: (dotPath, location) ->
+      return {type: 'setDotLocation', location: location, dotPath: dotPath}
+
     _resetState: (playerId = null) ->
       @state = 
         playerId: playerId
@@ -122,10 +126,11 @@ module.exports = class Game
             @state.nextMoveTime = null
 
           switch move.type
-            when 'addPlayer'    then @_addPlayer(move)
-            when 'removePlayer' then @_removePlayer(move)
-            when 'start'        then @_start(move)
-            when 'fire'         then @_fire(move)
+            when 'addPlayer'      then @_addPlayer(move)
+            when 'removePlayer'   then @_removePlayer(move)
+            when 'start'          then @_start(move)
+            when 'fire'           then @_fire(move)
+            when 'setDotLocation' then @_setDotLocation(move)
 
           @state.updated = true
 
@@ -238,6 +243,14 @@ module.exports = class Game
             dots.push(dot)
             player.dots.push(dot)
 
+    # Set the location of the dot at dotPath to the given location. For
+    # testing use only.
+    _setDotLocation: (move) ->
+      path = move.dotPath
+      dot = @state.teams[path.team].players[path.player].dots[path.dot]
+      dot.x = move.location.x
+      dot.y = move.location.y
+
     # # Advance the game by one turn, updating team/player/dot active values
     _advanceTurn: ->
       recursivelyAdvance = (ary) ->
@@ -292,7 +305,7 @@ module.exports = class Game
         @state.turnTime = @TURN_TIME
         @state.updated = true
 
-      flip = if @state.fn.origin.x > 0 then 1 else
+      flip = if @state.fn.origin.x > 0 then -1 else 1
       x = @state.fn.origin.x + flip*@FN_ANIMATION_SPEED*(@state.time - @state.fn.startTime)
       y = @state.fn.evaluate(x)
 

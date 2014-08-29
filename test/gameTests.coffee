@@ -43,35 +43,28 @@ describe 'Game', ->
     assert game.state.teams[0].players.length == 0
     assert game.state.teams[1].players.length == 0
 
-  # TODO: eventually fix this test
-  # it 'should delete dots when a function intersects them', ->
-  #   game = helpers.generateGame([
-  #     Game.addPlayer(1, 'ishaan'),
-  #     Game.addPlayer(2, 'zain'),
-  #     Game.start(2)
-  #   ])
+  it 'should delete dots when a function intersects them', ->
+    game = helpers.generateGame([
+      Game.addPlayer(1, 'ishaan'),
+      Game.addPlayer(2, 'zain'),
+      Game.start(2),
+      Game.setDotLocation({team: 0, player: 0, dot: 0}, {x: -1, y: 0}),
+      Game.setDotLocation({team: 1, player: 0, dot: 0}, {x: 1, y: 0})
+    ])
 
-  #   dot1 = game.state.teams[0].players[0].dots[0]
-  #   dot1.x = -1
-  #   dot1.y = 0
-
-  #   dot2 = game.state.teams[1].players[0].dots[0]
-  #   dot2.x = 1
-  #   dot2.y = 0
-
-  #   # Fire
-  #   game.pushMove(Game.fire('0'), 1, 3)
-  #   game.generateStateAtTimeForPlayer(3, null)
+    # Fire
+    game.pushMove(Game.fire('0'), 1, 5)
+    game.generateStateAtTimeForPlayer(5, null)
     
-  #   # Fast-forward to when the function has moved one unit 
-  #   game.generateStateAtTimeForPlayer(game.state.time + (1 / Game::FN_ANIMATION_SPEED), null)
+    # Fast-forward to when the function has moved one unit 
+    game.generateStateAtTimeForPlayer(game.state.time + (1 / Game::FN_ANIMATION_SPEED), null)
 
-  #   assert game.state.teams[1].players[0].dots[0].alive
+    assert game.state.teams[1].players[0].dots[0].alive
 
-  #   # Fast-forward another unit
-  #   game.generateStateAtTimeForPlayer(game.state.time + (1 / Game::FN_ANIMATION_SPEED), null)
+    # Fast-forward another unit
+    game.generateStateAtTimeForPlayer(game.state.time + (1 / Game::FN_ANIMATION_SPEED), null)
 
-  #   assert !game.state.teams[1].players[0].dots[0].alive
+    assert !game.state.teams[1].players[0].dots[0].alive
 
   describe '(turn advancement)', ->
 
@@ -110,7 +103,8 @@ describe 'Game', ->
       ])
 
       oldTime = game.state.turnTime
-      game.generateStateAtTimeForPlayer(game.state.time + 1)
+      game.generateStateAtTimeForPlayer(game.state.time + 2)
+
       assert game.state.turnTime == oldTime
 
     it 'should advance turns after firing', ->
