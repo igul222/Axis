@@ -22,13 +22,19 @@ module.exports = React.createClass(
   GLOW_COLOR: 'rgb(0,255,0)'
   GLOW_RADIUS: 5
 
-  CANVAS_WIDTH: 800 # px
+  getInitialState: ->
+    # The absolute dimensions set here don't matter, but canvas's css will
+    # remember the aspect ratio.
+    {canvasWidth: Game::X_MAX, canvasHeight: Game::Y_MAX}
 
   componentDidMount: ->
     @lastAnimationTimestamp = 0
     @tickID = requestAnimationFrame @tick
-    
-    @paint(@getContext())
+
+    @updateCanvasSize()
+    window.addEventListener('resize', @updateCanvasSize)
+
+    @paint()
 
   tick: (animationTimestamp) ->
     dt = animationTimestamp - @lastAnimationTimestamp
@@ -39,23 +45,33 @@ module.exports = React.createClass(
 
     @tickID = requestAnimationFrame @tick
 
+  updateCanvasSize: ->
+    newWidth = @getCanvas().clientWidth
+    newHeight = @getCanvas().clientHeight
+
+    if @state.canvasWidth != newWidth or @state.canvasHeight != newHeight
+      @setState(canvasWidth: newWidth, canvasHeight: newHeight)
+
   componentWillUnmount: ->
+    window.removeEventListener('resize', @updateCanvasSize)
     cancelAnimationFrame @tickID
 
   componentDidUpdate: ->
-    context = @getContext()
-    context.clearRect(
-      0, 
-      0, 
-      @CANVAS_WIDTH, 
-      @_canvasHeight()
-    )
-    @paint(context)
+    @paint()
 
-  getContext: ->
-    @getDOMNode().querySelector('canvas').getContext('2d')
+  getCanvas: ->
+    @getDOMNode().querySelector('canvas')
 
   paint: (context) ->
+    canvas = @getCanvas()
+    context = canvas.getContext('2d')
+
+    context.clearRect(
+      0,
+      0,
+      @state.canvasWidth,
+      @state.canvasHeight
+    )
     context.save()
 
     context.shadowColor = @GLOW_COLOR;
@@ -90,20 +106,27 @@ module.exports = React.createClass(
 
     context.restore()
 
-  # Convert game units to canvas pixels
-  _toPx: (units) ->
-    units * (0.5 * @CANVAS_WIDTH / Game::X_MAX)
+  # Returns the canvas width in pixels
+  _canvasWidth: ->
+    @state.canvasWidth
 
   # Returns the canvas height in pixels
   _canvasHeight: ->
-    @_toPx(2*Game::Y_MAX)
+    @state.canvasHeight
+
+  # Convert game units to canvas pixels
+  _toPx: (units, vertical = false) ->
+    if vertical
+      units * (0.5 * @state.canvasHeight / Game::Y_MAX)
+    else
+      units * (0.5 * @state.canvasWidth / Game::X_MAX)
  
   # Convert game coordinates to canvas coordinates
   _g2c: (x,y) ->
     flip = if @props.gameState.flipped then -1 else 1
     [
       @_toPx(Game::X_MAX + (flip * x)),
-      @_toPx(Game::Y_MAX - y),
+      @_toPx(Game::Y_MAX - y, true),
     ]
 
   drawDot: (context, dot, dotActive) ->
@@ -137,8 +160,8 @@ module.exports = React.createClass(
     context.clearRect(
       0, 
       0, 
-      @CANVAS_WIDTH, 
-      @_canvasHeight()
+      @state.canvasWidth,
+      @state.canvasHeight
     )
 
     context.restore()
@@ -170,7 +193,7 @@ module.exports = React.createClass(
     @drawFunctionSegment(context, 0, @tMax)
 
   extendFunction: (dt) ->
-    context = @getContext()
+    context = @getCanvas().getContext('2d')
 
     context.save()
     @drawFunctionSegment(context, @tMax, @tMax + dt)
@@ -199,10 +222,10 @@ module.exports = React.createClass(
     context.stroke()
 
   render: ->
-    <div id='canvasWrapper'>
+    <div id='canvas-wrapper'>
       <canvas
-        width={@CANVAS_WIDTH}
-        height={@_canvasHeight()}
+        width={@state.canvasWidth}
+        height={@state.canvasHeight}
       />
     </div>
 )

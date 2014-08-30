@@ -6,13 +6,27 @@ html, body {
   background: url('/background.png');
 }
 
-#canvasWrapper {
+#canvas-wrapper {
   background-image: url('/crt-dark.png');
-  width: 982px;
-  height: 589px;
+  background-size: 100% auto;
 
-  canvas {
-    margin-left: (982px - 800px)/2;
-    margin-top: (589px - 480px)/2;
-  }
+  // Hack to hold aspect ratio, see http://stackoverflow.com/questions/1495407
+  padding-bottom: (100% * 589px / 982px);
+  position: relative;
+}
+
+canvas {
+  display: block;
+  position: absolute;
+
+  // It 'remembers' the initial aspect ratio set in Graph.cjsx
+  width: 83%;
+  height: auto;
+
+  // Center within #canvas-wrapper
+  top:    0;
+  right:  0;
+  bottom: 0;
+  left:   0;
+  margin: auto;
 }
