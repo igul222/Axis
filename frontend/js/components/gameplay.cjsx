@@ -14,18 +14,24 @@ module.exports = React.createClass(
     evt.preventDefault()
 
   render: ->
+    state = @props.data.gameState
+
     <div>
-      <Graph
-        gameState={@props.data.gameState}
-      />
-      
+      <Graph gameState={state} />
+
       <p>Function:</p>
       <form>
         <input type="text" valueLink={this.linkState('expression')} />
-        <input className='button black' type="submit" value="Fire" onClick={@fire} />
+        <input
+          className='button black'
+          type='submit'
+          value='Fire'
+          onClick={@fire}
+          disabled={state.fn or state.active.player.id != state.playerId}
+        />
       </form>
 
-      <p id="turn-time">Turn time: {@props.data.gameState.turnTime / 1000}</p>
+      <p id="turn-time">Turn time: {state.turnTime / 1000}</p>
 
     </div>
 )
