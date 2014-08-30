@@ -104,14 +104,7 @@ module.exports = class Game
           if @state.fn
             @_processCollisions()
           else
-            # Advance turn time
-            @state.turnTime--
-
-            if @state.turnTime == 0
-              @_advanceTurn()
-
-            if @state.turnTime % 1000 == 0
-              @state.updated = true
+            @_advanceTurnTime()
 
         # Apply move (if any) at state.time
 
@@ -251,7 +244,19 @@ module.exports = class Game
       dot.x = move.location.x
       dot.y = move.location.y
 
-    # # Advance the game by one turn, updating team/player/dot active values
+    # Advance the current player's turn time by 1ms
+    _advanceTurnTime: ->
+      # Advance turn time
+      @state.turnTime--
+
+      if @state.turnTime == 0
+        @_advanceTurn()
+
+      if !@state.updated and @state.turnTime % 1000 == 0
+        @state.updated = true
+
+
+    # Advance the game by one turn, updating team/player/dot active values
     _advanceTurn: ->
       recursivelyAdvance = (ary) ->
         return unless ary?
