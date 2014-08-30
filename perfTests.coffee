@@ -15,7 +15,6 @@ for useless in [1..10]
   for i in [1..50]
     game.pushMove(Game.fire('0'), 2, t += 1000*30)
 
-
   console.log 'testing...'
 
   t0 = Date.now()
