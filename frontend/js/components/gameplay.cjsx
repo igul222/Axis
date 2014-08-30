@@ -20,8 +20,10 @@ module.exports = React.createClass(
       />
       
       <p>Function:</p>
-      <input type="text" valueLink={this.linkState('expression')} />
-      <input type="submit" value="Fire" onClick={@fire} />
+      <form>
+        <input type="text" valueLink={this.linkState('expression')} />
+        <input className='button black' type="submit" value="Fire" onClick={@fire} />
+      </form>
 
       <p id="turn-time">Turn time: {@props.data.gameState.turnTime / 1000}</p>
 

@@ -1,5 +1,18 @@
 @import 'bootstrap/bootstrap';
 
+@import 'buttons';
+
+html, body {
+  background: url('/background.png');
+}
+
 #canvasWrapper {
-  background-color: black;
+  background-image: url('/crt-dark.png');
+  width: 982px;
+  height: 589px;
+
+  canvas {
+    margin-left: (982px - 800px)/2;
+    margin-top: (589px - 480px)/2;
+  }
 }

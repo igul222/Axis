@@ -21,7 +21,7 @@ App = React.createClass(
         content = <pre>props: {JSON.stringify(this.props, null, 4)}</pre>
 
     <div>
-      <div className="navbar navbar-default navbar-static-top">
+      <div className="navbar navbar-inverse navbar-static-top">
         <div className="container">
           <a className="navbar-brand" href="/">Axis</a>
         </div>
