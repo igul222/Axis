@@ -10,13 +10,14 @@ module.exports = React.createClass(
   OBSTACLE_STROKE_COLOR: 'rgb(245,255,245)'
   OBSTACLE_FILL_COLOR:   'rgba(245,255,245,0.05)'
 
-  DEAD_DOT_COLOR:        'rgb(150,150,150)'
+  DEAD_DOT_COLOR:        'rgb(245,255,245)'
 
   FUNCTION_THICKNESS: 1 # px
 
   DOT_THICKNESS: 1 # px
 
-  TEXT_FONT: '14px Monaco'
+  TEXT_SIZE: 14 # px
+  TEXT_FONT: 'Monaco'
   TEXT_COLOR: 'rgb(245,255,245)'
 
   GLOW_COLOR: 'rgb(0,255,0)'
@@ -25,7 +26,11 @@ module.exports = React.createClass(
   getInitialState: ->
     # The absolute dimensions set here don't matter, but canvas's css will
     # remember the aspect ratio.
-    {canvasWidth: Game::X_MAX, canvasHeight: Game::Y_MAX}
+    {
+      scale: window.devicePixelRatio or 1
+      canvasWidth: Game::X_MAX, 
+      canvasHeight: Game::Y_MAX
+    }
 
   componentDidMount: ->
     @lastAnimationTimestamp = 0
@@ -46,8 +51,8 @@ module.exports = React.createClass(
     @tickID = requestAnimationFrame @tick
 
   updateCanvasSize: ->
-    newWidth = @getCanvas().clientWidth
-    newHeight = @getCanvas().clientHeight
+    newWidth = @state.scale * @getCanvas().clientWidth
+    newHeight = @state.scale * @getCanvas().clientHeight 
 
     if @state.canvasWidth != newWidth or @state.canvasHeight != newHeight
       @setState(canvasWidth: newWidth, canvasHeight: newHeight)
@@ -130,14 +135,16 @@ module.exports = React.createClass(
     ]
 
   drawDot: (context, dot, dotActive) ->
+    scaledThickness = @state.scale * @DOT_THICKNESS
+
     context.beginPath()
     context.arc(
       @_g2c(dot.x, dot.y)..., 
-      @_toPx(Game::DOT_RADIUS) - @DOT_THICKNESS/2, 
+      @_toPx(Game::DOT_RADIUS) - (scaledThickness/2), 
       0, 
       2*Math.PI
     )
-    context.lineWidth = @DOT_THICKNESS
+    context.lineWidth = scaledThickness
     if dotActive
       context.strokeStyle = @ACTIVE_DOT_COLOR
     else if !dot.alive
@@ -151,15 +158,15 @@ module.exports = React.createClass(
     context.beginPath()
     context.arc(
       @_g2c(ao.x, ao.y)..., 
-      @_toPx(Game::DOT_RADIUS) - @DOT_THICKNESS/2, 
-      0, 
+      @_toPx(Game::ANTIOBSTACLE_RADIUS), 
+      0,
       2*Math.PI
     )
 
     context.clip()
     context.clearRect(
-      0, 
-      0, 
+      0,
+      0,
       @state.canvasWidth,
       @state.canvasHeight
     )
@@ -183,7 +190,7 @@ module.exports = React.createClass(
     context.stroke()
 
   drawText: (context, text, origin) ->
-    context.font = @TEXT_FONT
+    context.font = (@TEXT_SIZE*@state.scale)+'px '+@TEXT_FONT
     context.textAlign = 'center'
     context.fillStyle = @TEXT_COLOR
     context.fillText(text.toUpperCase(), @_g2c(origin.x, origin.y)...)
@@ -203,7 +210,7 @@ module.exports = React.createClass(
 
   drawFunctionSegment: (context, t0, tMax) ->
     context.beginPath()
-    context.lineWidth = @FUNCTION_THICKNESS
+    context.lineWidth = @state.scale * @FUNCTION_THICKNESS
     context.strokeStyle = @FUNCTION_COLOR
     flip = if @props.gameState.fn.origin.x > 0 then -1 else 1
 
