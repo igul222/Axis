@@ -287,7 +287,7 @@ module.exports = class Game
 
     _fire: (move) ->
       active = @_getActive()
-      return unless move.agentId == active.player.id
+      return unless move.agentId == active.player.id and !@state.fn
 
       compiledFunction = math.compile(move.expression)
 
