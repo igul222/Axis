@@ -10,15 +10,17 @@ module.exports = React.createClass(
   OBSTACLE_STROKE_COLOR: 'rgb(245,255,245)'
   OBSTACLE_FILL_COLOR:   'rgba(245,255,245,0.05)'
 
-  DEAD_DOT_COLOR:        'rgb(245,255,245)'
+  DEAD_DOT_COLOR:        'rgba(245,255,245,0.5)'
 
   FUNCTION_THICKNESS: 1 # px
 
   DOT_THICKNESS: 1 # px
+  ACTIVE_DOT_THICKNESS: 2 #px
 
   TEXT_SIZE: 14 # px
   TEXT_FONT: 'Monaco'
   TEXT_COLOR: 'rgb(245,255,245)'
+  DEAD_TEXT_COLOR: 'rgba(245,255,245,0.5)'
 
   GLOW_COLOR: 'rgb(0,255,0)'
   GLOW_RADIUS: 5
@@ -104,7 +106,12 @@ module.exports = React.createClass(
         for dot in player.dots
           active = dot.active and player.active and team.active
           @drawDot(context, dot, active)
-          @drawText(context, player.name, {x: dot.x, y: dot.y + 1})
+          @drawText(
+            context, 
+            player.name,
+            if dot.alive then @TEXT_COLOR else @DEAD_TEXT_COLOR,
+            {x: dot.x, y: dot.y + 1}
+          )
 
     if @props.gameState.fn
       @drawEntireFunction(context)
@@ -135,7 +142,10 @@ module.exports = React.createClass(
     ]
 
   drawDot: (context, dot, dotActive) ->
-    scaledThickness = @state.scale * @DOT_THICKNESS
+    if dotActive and @props.gameState.time % 1000 < 500
+      scaledThickness = @state.scale * @ACTIVE_DOT_THICKNESS
+    else
+      scaledThickness = @state.scale * @DOT_THICKNESS
 
     context.beginPath()
     context.arc(
@@ -189,10 +199,10 @@ module.exports = React.createClass(
     context.fill()
     context.stroke()
 
-  drawText: (context, text, origin) ->
+  drawText: (context, text, color, origin) ->
     context.font = (@TEXT_SIZE*@state.scale)+'px '+@TEXT_FONT
     context.textAlign = 'center'
-    context.fillStyle = @TEXT_COLOR
+    context.fillStyle = color
     context.fillText(text.toUpperCase(), @_g2c(origin.x, origin.y)...)
 
   drawEntireFunction: (context) ->

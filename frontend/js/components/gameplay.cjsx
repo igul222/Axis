@@ -15,23 +15,48 @@ module.exports = React.createClass(
 
   render: ->
     state = @props.data.gameState
-
     <div>
-      <Graph gameState={state} />
+      <div className='row'>
+        <div className='col-sm-12'>
+          <Graph gameState={state} />
+        </div>
+      </div>
 
-      <p>Function:</p>
-      <form>
-        <input type="text" valueLink={this.linkState('expression')} />
-        <input
-          className='button black'
-          type='submit'
-          value='Fire'
-          onClick={@fire}
-          disabled={state.fn or state.active.player.id != state.playerId}
-        />
-      </form>
+      <div className='row'>
+        <div className='col-sm-10'>
+          <form>
+            <input type="text" valueLink={this.linkState('expression')} />
+            <input
+              className='button black'
+              type='submit'
+              value='Fire'
+              onClick={@fire}
+              disabled={state.fn or state.active.player?.id != state.playerId}
+            />
+          </form>
+        </div>
 
-      <p id="turn-time">Turn time: {state.turnTime / 1000}</p>
-
+        <div className='col-sm-2'>
+          {state.turnTime / 10}
+        </div>
+      </div>
     </div>
+
+    # <div>
+
+    #   <p>Function:</p>
+    #   <form>
+    #     <input type="text" valueLink={this.linkState('expression')} />
+    #     <input
+    #       className='button black'
+    #       type='submit'
+    #       value='Fire'
+    #       onClick={@fire}
+    #       disabled={state.fn or state.active.player?.id != state.playerId}
+    #     />
+    #   </form>
+
+    #   <p id="turn-time">Turn time: {state.turnTime / 1000}</p>
+
+    # </div>
 )

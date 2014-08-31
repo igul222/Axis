@@ -128,6 +128,7 @@ module.exports = class Game
 
           @state.updated = true
 
+
       return @state
 
     #########
@@ -394,7 +395,7 @@ module.exports = class Game
         @generateStateAtTimeForPlayer(@playbackTime, playerId)
         if @state.updated
           callback(@state)
-          @state.updated = false
+          # @state.updated = false
 
         @animationRequestID = requestAnimationFrame(animate)
       @animationRequestID = requestAnimationFrame(animate)
