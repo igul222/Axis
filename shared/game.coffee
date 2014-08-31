@@ -101,7 +101,6 @@ module.exports = class Game
         @state.time++
 
         if @state.started
-
           if @state.fn
             @_processCollisions()
           else
@@ -128,6 +127,9 @@ module.exports = class Game
 
           @state.updated = true
 
+        # Force an update every 500ms to allow for animations
+        if !@state.updated and @state.time % 500 == 0
+          @state.updated = true
 
       return @state
 
@@ -256,10 +258,6 @@ module.exports = class Game
       if @state.turnTime == 0
         @_advanceTurn()
 
-      if !@state.updated and @state.turnTime % 1000 == 0
-        @state.updated = true
-
-
     # Advance the game by one turn, updating team/player/dot active values
     # and @state.active
     _advanceTurn: ->
@@ -291,7 +289,9 @@ module.exports = class Game
           @state.active.player.active = false
           @state.active.dot.active = false
           @state.active = {team: null, player: null, dot: null}
-          break
+          @state.turnTime = -1
+          @state.updated = true
+          return
 
       @state.turnTime = @TURN_TIME
       @state.updated = true
@@ -395,7 +395,7 @@ module.exports = class Game
         @generateStateAtTimeForPlayer(@playbackTime, playerId)
         if @state.updated
           callback(@state)
-          # @state.updated = false
+          @state.updated = false
 
         @animationRequestID = requestAnimationFrame(animate)
       @animationRequestID = requestAnimationFrame(animate)

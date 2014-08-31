@@ -9,7 +9,7 @@ html, body {
 #canvas-wrapper {
   background-image: url('/crt-dark.png');
   background-size: 100% auto;
-
+  border-radius: 30px;
   // Hack to hold aspect ratio, see http://stackoverflow.com/questions/1495407
   padding-bottom: (100% * 589px / 982px);
   position: relative;
@@ -29,4 +29,30 @@ canvas {
   bottom: 0;
   left:   0;
   margin: auto;
+}
+
+#controls {
+  margin-top: 20px;
+}
+
+#time-remaining {
+  background: linear-gradient(
+    lighten(rgb(150, 150, 130), 10%),
+    darken(rgb(150, 150, 130), 10%)
+  );
+  border-radius: 10px;
+  box-shadow: inset 0 5px 10px rgba(0, 0, 0, 0.75);
+
+  font-family: 'Segment7';
+  // The font includes an 18.5% (13px) bottom padding
+  padding: 13px 13px 0 13px;
+  font-size: 70px;
+  line-height: 100%;
+  text-align: right;
+}
+
+#time-remaining::before {
+  content: '88';
+  position: absolute;
+  color: rgba(0, 0, 0, 0.1);
 }

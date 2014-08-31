@@ -14,16 +14,24 @@ module.exports = React.createClass(
     evt.preventDefault()
 
   render: ->
-    state = @props.data.gameState
+    gameState = @props.data.gameState
+
+    turnTime = Math.round(gameState.turnTime / 1000)
+    if turnTime < 10
+      if turnTime > 0
+        turnTime = '0' + turnTime
+      else
+        turnTime = '--'
+
     <div>
       <div className='row'>
         <div className='col-sm-12'>
-          <Graph gameState={state} />
+          <Graph gameState={gameState} />
         </div>
       </div>
 
-      <div className='row'>
-        <div className='col-sm-10'>
+      <div id='controls' className='row'>
+        <div className='col-sm-9 col-md-10'>
           <form>
             <input type="text" valueLink={this.linkState('expression')} />
             <input
@@ -31,13 +39,13 @@ module.exports = React.createClass(
               type='submit'
               value='Fire'
               onClick={@fire}
-              disabled={state.fn or state.active.player?.id != state.playerId}
+              disabled={gameState.fn or gameState.active.player?.id != gameState.playerId}
             />
           </form>
         </div>
 
-        <div className='col-sm-2'>
-          {state.turnTime / 10}
+        <div className='col-sm-3 col-md-2'>
+          <div id='time-remaining'>{ turnTime }</div>
         </div>
       </div>
     </div>

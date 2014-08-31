@@ -15,7 +15,7 @@ module.exports = React.createClass(
   FUNCTION_THICKNESS: 1 # px
 
   DOT_THICKNESS: 1 # px
-  ACTIVE_DOT_THICKNESS: 2 #px
+  ACTIVE_DOT_THICKNESS: 4 #px
 
   TEXT_SIZE: 14 # px
   TEXT_FONT: 'Monaco'
