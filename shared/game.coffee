@@ -262,6 +262,9 @@ module.exports = class Game
     # Advance the game by one turn, updating team/player/dot active values
     # and @state.active
     _advanceTurn: ->
+      # If there's nothing active, this should be a no-op.
+      return unless @state.active.dot
+
       recursivelyAdvance = (ary) ->
         return unless ary?
         for item,i in ary
@@ -281,7 +284,13 @@ module.exports = class Game
       currentDot = @state.active.dot
       until @state.active.dot.alive
         advanceOneTurn()
-        break if @state.active.dot == currentDot
+        if @state.active.dot == currentDot
+          # No living players remaining, so nobody's active.
+          @state.active.team.active = false
+          @state.active.player.active = false
+          @state.active.dot.active = false
+          @state.active = {team: null, player: null, dot: null}
+          break
 
       @state.turnTime = @TURN_TIME
       @state.updated = true
@@ -289,10 +298,9 @@ module.exports = class Game
     # Set/update the state's active team, player, and dot.
     _updateActive: ->
       team = _.find(@state.teams, (x) -> x.active)
-      player = _.find(team.players, (x) -> x.active)
+      player = _.find(team?.players, (x) -> x.active)
       dot = _.find(player?.dots, (x) -> x.active)
       @state.active = {team, player, dot}
-      return null
 
     _fire: (move) ->
       return unless move.agentId == @state.active.player.id and !@state.fn
