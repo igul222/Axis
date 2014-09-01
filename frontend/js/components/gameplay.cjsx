@@ -44,7 +44,7 @@ module.exports = React.createClass(
           </form>
         </div>
 
-        <div className='col-sm-3 col-md-2'>
+        <div className='col-xs-4 col-sm-3 col-md-2'>
           <div id='time-remaining'>{ turnTime }</div>
         </div>
       </div>
