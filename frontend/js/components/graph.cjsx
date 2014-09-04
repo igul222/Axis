@@ -142,7 +142,7 @@ module.exports = React.createClass(
     ]
 
   drawDot: (context, dot, dotActive) ->
-    if dotActive and @props.gameState.time % 1000 < 500
+    if dotActive and @props.gameState.time % 2000 < 1000
       scaledThickness = @state.scale * @ACTIVE_DOT_THICKNESS
     else
       scaledThickness = @state.scale * @DOT_THICKNESS
