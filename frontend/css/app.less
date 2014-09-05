@@ -1,5 +1,4 @@
 @import 'bootstrap/bootstrap';
-
 @import 'buttons';
 
 @font-face {
@@ -28,6 +27,7 @@ html, body {
 }
 
 canvas {
+
   display: block;
   position: absolute;
 
@@ -43,23 +43,36 @@ canvas {
   margin: auto;
 }
 
+.lcd {
+  @lcd-bg: rgb(150, 150, 130);
+  background: linear-gradient(
+    lighten(@lcd-bg, 10%), 
+    darken(@lcd-bg, 10%)
+  );
+
+  border: 1px solid rgb(30,30,30);
+  box-shadow: inset 0 3px 10px rgba(0, 0, 0, 0.75);
+}
+
 #controls {
+  .make-row();
   margin-top: 20px;
 }
 
+#time-remaining-wrapper {
+  .make-sm-column(3);
+  .make-md-column(2);
+}
+
 #time-remaining {
-  background: linear-gradient(
-    lighten(rgb(150, 150, 130), 10%), 
-    darken(rgb(150, 150, 130), 10%)
-  );
+  .lcd;
+
   border-radius: 10px;
-  border: 1px solid rgb(30,30,30);
-  box-shadow: inset 0 3px 10px rgba(0, 0, 0, 0.75);
 
   font-family: 'Segment7';
+  font-size: 70px;
   // The font includes an 18.5% (13px) bottom padding
   padding: 13px 13px 0 13px;
-  font-size: 70px;
   line-height: 100%;
   text-align: right;
 }
@@ -70,15 +83,34 @@ canvas {
   color: rgba(0, 0, 0, 0.1);
 }
 
-@media (max-width: @screen-xs-max) {
-  #canvas-wrapper {
-    border-radius: 15px;
+#expression-wrapper {
+  .make-sm-column(6);
+  .make-md-column(8);
+
+  #expression {
+    .lcd;
+    font-family: '5x8 LCD HD44780U A02';
+    font-size: 30px;
+    padding: 10px 20px;
+    margin: 10px 0;
+
+    #lcd-background {
+      color: rgba(0, 0, 0, 0.1);
+      overflow: hidden;
+    }
   }
 
-  #time-remaining {
-    font-size: 35px;
-    padding: 6px 6px 0 6px;
-    border-radius: 5px;
-    box-shadow: inset 0 2px 6px rgba(0, 0, 0, 0.75);
+  input {
+    width: 100%;
+    position: absolute;
+    background-color: transparent;
+    padding: 0;
+    border: none;
+    outline: none;
   }
+}
+
+#fire-wrapper {
+  .make-sm-column(3);
+  .make-md-column(2);
 }

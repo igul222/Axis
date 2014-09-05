@@ -23,30 +23,35 @@ module.exports = React.createClass(
       else
         turnTime = '--'
 
+
+
     <div>
-      <div className='row'>
-        <div className='col-sm-12'>
-          <Graph gameState={gameState} />
-        </div>
-      </div>
+      <Graph gameState={gameState} />
 
-      <div id='controls' className='row'>
-        <div className='col-sm-9 col-md-10'>
-          <form>
-            <input type="text" valueLink={this.linkState('expression')} />
-            <input
-              className='button black'
-              type='submit'
-              value='Fire'
-              onClick={@fire}
-              disabled={gameState.fn or gameState.active.player?.id != gameState.playerId}
-            />
-          </form>
-        </div>
+      <form id='controls'>
 
-        <div className='col-xs-4 col-sm-3 col-md-2'>
+        <div id='time-remaining-wrapper'>
           <div id='time-remaining'>{ turnTime }</div>
         </div>
-      </div>
+
+        <div id='expression-wrapper'>
+          <div id='expression'>
+            <input type='text' valueLink={this.linkState('expression')} />
+            <div id='lcd-background'>ஏஏஏஏஏஏஏஏஏஏஏஏஏஏஏஏஏஏஏஏஏஏஏஏஏஏஏஏஏஏஏஏஏஏ</div>
+          </div>
+        </div>
+
+        <div id='fire-wrapper'>
+          <input
+            className='huge black button'
+            type='submit'
+            value='FIRE'
+            onClick={@fire}
+            disabled={gameState.fn or gameState.active.player?.id != gameState.playerId}
+          />
+        </div>
+
+      </form>
+
     </div>
 )
