@@ -42,13 +42,15 @@ module.exports = React.createClass(
         </div>
 
         <div id='fire-wrapper'>
-          <input
-            className='huge black button'
-            type='submit'
-            value='FIRE'
-            onClick={@fire}
-            disabled={gameState.fn or gameState.active.player?.id != gameState.playerId}
-          />
+          <div className='huge-button-wrapper'>
+            <input
+              className='huge black button'
+              type='submit'
+              value='FIRE'
+              onClick={@fire}
+              disabled={gameState.fn or gameState.active.player?.id != gameState.playerId}
+            />
+          </div>
         </div>
 
       </form>
