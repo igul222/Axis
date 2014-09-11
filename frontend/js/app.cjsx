@@ -2,6 +2,7 @@ React = require('react/addons')
 page  = require('page')
 WelcomePage = require('./components/welcome_page.cjsx')
 GamePage    = require('./components/game_page.cjsx')
+Chat = require('./components/chat.cjsx')
 
 window.gameClient = require('./client.coffee')
 window.pp = (x) -> console.log(JSON.stringify(x,null,4))
@@ -17,6 +18,9 @@ App = React.createClass(
         content = <WelcomePage data={this.props.data} />
       when 'game'
         content = <GamePage params={this.props.params} data={this.props.data} />
+        chat = null
+        if this.props.data.gameState !=null and this.props.data.gameState.started
+          chat = <div className="sidebar col sm-6 pull-right"><Chat gameState={this.props.data.gameState} /></div>
       else
         content = <pre>props: {JSON.stringify(this.props, null, 4)}</pre>
 
@@ -26,6 +30,7 @@ App = React.createClass(
           <a className="navbar-brand" href="/">Axis</a>
         </div>
       </div>
+      {chat}
       <div className="container">{content}</div>
     </div>
 )

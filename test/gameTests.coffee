@@ -122,3 +122,11 @@ describe 'Game', ->
       assert game.state.teams[1].active
       assert game.state.teams[1].players[0].active
       assert game.state.teams[1].players[0].dots[0].active
+
+    it 'should send messages from any player', ->
+      game = helpers.generateGame([
+        Game.addPlayer(1, 'ishaan'),
+        Game.addPlayer(2, 'zain'),
+        Game.start(2),
+        _.assign(Game.sendMessage('Hello!!'), agentId: 1)
+      ])

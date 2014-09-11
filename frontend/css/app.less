@@ -114,3 +114,68 @@ canvas {
   .make-sm-column(3);
   .make-md-column(2);
 }
+@media(min-width: 900px){
+  .sidebar {
+    z-index: 1000;
+    position: fixed;
+    right: 0px;
+    height: 100%;
+    top: 0px;
+    padding: 20px;
+    margin-left: 400px;
+    overflow-y: auto;
+    background: #111;
+    -webkit-transition: all 0.5s ease;
+    -moz-transition: all 0.5s ease;
+    -o-transition: all 0.5s ease;
+    transition: all 0.5s ease;
+    -webkit-box-shadow: inset 10px 0px 20px 0px rgba(0,0,0,0.75);
+    -moz-box-shadow: inset 10px 0px 20px 0px rgba(0,0,0,0.75);
+    box-shadow: inset 10px 0px 20px 0px rgba(0,0,0,0.75);
+
+    .heading{
+      border-bottom: 1px solid;
+      padding: 5px;
+    }
+    .chats{
+      padding-top: 20px;
+      padding-left: 0px;
+      text-align: left;
+    }
+    .messageList{
+      list-style: none;
+      color: whitesmoke;
+      padding-left: 0px;
+    }
+
+    .message{
+      margin-bottom: 5px;
+    }
+
+    .sender{
+      display: inline;
+      color: #ccc;
+    }
+    .sender::before{
+      content: "[";
+    }
+    .sender::after{
+      content: "]: ";
+    }
+    .text{
+      display: inline;
+    }
+    #chatbox{
+      input{
+        border: none;
+        height: 40px;
+        padding: 10px;
+      }
+    }
+  }
+}
+@media(max-width: 900px){
+  .sidebar{
+    width:0px;
+  }
+}
