@@ -5,6 +5,7 @@ uuid = require('uuid')
 seed = require('seed-random')
 math = require('mathjs')
 deepcopy = require('deepcopy')
+MarchingSquares = require('./MarchingSquares')
 
 module.exports = class Game
     X_MAX: 25
@@ -12,10 +13,14 @@ module.exports = class Game
     DOTS_PER_PLAYER: 2
     FN_ANIMATION_SPEED: 0.005 # graph units per ms
     DOT_RADIUS: 1
+    DOT_RADIUS_SQUARED: 1
     TURN_TIME: 60000 # ms
-    OBSTACLE_COUNT: 5
-    OBSTACLE_RADIUS: 5
+    OBSTACLE_COUNT: 10
+    @MIN_OBSTACLE_RADIUS: 0
+    @MAX_OBSTACLE_RADIUS: 5
+    OBSTACLE_PATH_RESOLUTION: 0.5
     ANTIOBSTACLE_RADIUS: 1
+    @ANTIOBSTACLE_RADIUS_SQUARED: 1
 
     constructor: ->
       @subscriberIds = []
@@ -82,6 +87,7 @@ module.exports = class Game
         obstacles: []
         antiobstacles: []
         active: {team: null, player: null, dot: null}
+        obstaclePaths: []
         teams: [
             active: true
             players: []
@@ -197,29 +203,26 @@ module.exports = class Game
           if (player.id == @state.playerId)
             @state.flipped = index > 0
 
-    _dist: (point1, point2) ->
-      Math.sqrt(
-        Math.pow(point2.x - point1.x, 2) +
-        Math.pow(point2.y - point1.y, 2)
-      )
-
     # Populate players with randomly positioned dots
     _generateInitialPositions: ->
       rand = seed(@data.rand)
 
-      randomPoint = (x0, y0, width, height) ->
-        x: (rand() * width) + x0
-        y: (rand() * height) + y0
+      randomPoint = (xMin, yMin, xMax, yMax) ->
+        x: (rand() * (xMax - xMin)) + xMin
+        y: (rand() * (yMax - yMin)) + yMin
 
       for i in [1..@OBSTACLE_COUNT]
         obstacle = randomPoint(
-          -@X_MAX,
+          -@X_MAX * 0.5,
           -@Y_MAX,
-          @X_MAX*2,
-          @Y_MAX*2
+          @X_MAX * 0.5,
+          @Y_MAX
         )
-        obstacle.radius = rand()*10
+        obstacle.radius = @constructor.MIN_OBSTACLE_RADIUS + rand()*(@constructor.MAX_OBSTACLE_RADIUS - @constructor.MIN_OBSTACLE_RADIUS)
+        obstacle.radiusSquared = Math.pow(obstacle.radius, 2)
         @state.obstacles.push(obstacle)
+
+      @_generateObstaclePaths()
 
       # Keep track of generated dots to avoid generating two nearby dots
       dots = []
@@ -229,18 +232,45 @@ module.exports = class Game
         for player in team.players
           for i in [1..@DOTS_PER_PLAYER]
             until dot? and 
-                  dots.every((d) => @_dist(dot,d) > 4) and 
-                  @state.obstacles.every((o) => @_dist(dot,o) > o.radius)
+                  dots.every((d) => @constructor._distSquared(dot,d) > 16*@DOT_RADIUS_SQUARED) and 
+                  !@constructor.obstacleHitTest(@state, dot.x, dot.y)
               dot = randomPoint(
                 hOffset,
                 -@Y_MAX,
-                @X_MAX,
-                @Y_MAX*2
+                hOffset + @X_MAX,
+                @Y_MAX
               )
             dot.alive = true
             dot.active = false
             dots.push(dot)
             player.dots.push(dot)
+
+    _generateObstaclePaths: ->
+      cellSize = @OBSTACLE_PATH_RESOLUTION # todo: move into config
+      hit = (x, y) => @constructor.obstacleHitTest(@state, x, y)
+      
+      @state.obstaclePaths = []
+
+      for obstacle in @state.obstacles
+        # If the obstacle is smaller than sqrt(2)*cellSize, it disappears.
+        continue if obstacle.radius < Math.sqrt(2) * cellSize/2
+
+        # Start at a known inside point and move right until we hit a boundary.
+        x = obstacle.x
+        y = obstacle.y
+        x += cellSize until MarchingSquares.isBoundary(hit, x, y, cellSize)
+
+        # Overlapping or nearby circles generate identical paths. Check if the
+        # boundary point is on an existing path before generating another one.
+        pathAlreadyExists = 
+          @state.obstaclePaths.some (path) ->
+            path.some (point) -> 
+              Math.abs(x - point.x) < cellSize and 
+              Math.abs(y - point.y) < cellSize
+
+        unless pathAlreadyExists
+          path = MarchingSquares.walkPerimeter(hit, x, y, cellSize)
+          @state.obstaclePaths.push(path)
 
     # Set the location of the dot at dotPath to the given location. For
     # testing use only.
@@ -321,12 +351,6 @@ module.exports = class Game
       }
 
     _processCollisions: ->
-      endFunction = =>
-        @state.fn = null
-        @_advanceTurn()
-        @state.turnTime = @TURN_TIME
-        @state.updated = true
-
       flip = if @state.fn.origin.x > 0 then -1 else 1
       x = @state.fn.origin.x + flip*@FN_ANIMATION_SPEED*(@state.time - @state.fn.startTime)
       y = @state.fn.evaluate(x)
@@ -336,16 +360,20 @@ module.exports = class Game
           for dot in player.dots
             if !(dot.active and player.active and team.active) and
                dot.alive and
-               @_dist({x,y}, dot) < @DOT_RADIUS
+               @constructor._distSquared({x,y}, dot) < @DOT_RADIUS_SQUARED
               dot.alive = false
               @state.updated = true
 
-      for obstacle in @state.obstacles
-        if @_dist({x,y}, obstacle) < obstacle.radius and 
-           @state.antiobstacles.every((ao) => @_dist({x,y}, ao) > @ANTIOBSTACLE_RADIUS)
-          
-          @state.antiobstacles.push({x,y})
-          endFunction()
+      endFunction = =>
+        @state.fn = null
+        @_advanceTurn()
+        @state.turnTime = @TURN_TIME
+        @state.updated = true
+
+      if @constructor.obstacleHitTest(@state, x, y)
+        @state.antiobstacles.push({x,y})
+        @_generateObstaclePaths()
+        endFunction()
 
       unless -@X_MAX <= x <= @X_MAX and 
              -@Y_MAX <= y <= @Y_MAX
@@ -403,3 +431,28 @@ module.exports = class Game
     stopAnimating: ->
       cancelAnimationFrame(@animationRequestID)
       @animationRequestID = null
+
+    ##################
+    # Helper functions
+    ##################
+
+    @_dist: (point1, point2) ->
+      Math.sqrt(
+        Math.pow(point2.x - point1.x, 2) +
+        Math.pow(point2.y - point1.y, 2)
+      )
+
+    @_distSquared: (point1, point2) ->
+      Math.pow(point2.x - point1.x, 2) +
+      Math.pow(point2.y - point1.y, 2)
+
+    @obstacleHitTest: (state, x, y) ->
+      if state.antiobstacles.some((ao) => 
+        @_distSquared({x,y}, ao) <= @ANTIOBSTACLE_RADIUS_SQUARED)
+
+        return false
+
+      field = (obstacle) => 
+        obstacle.radiusSquared / @_distSquared({x,y}, obstacle)
+      
+      return state.obstacles.map(field).reduce((a,b) -> a+b) >= 1

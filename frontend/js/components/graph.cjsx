@@ -8,7 +8,7 @@ module.exports = React.createClass(
   DOT_COLOR:             'rgb(245,255,245)'
   ACTIVE_DOT_COLOR:      'rgb(245,255,245)'
   OBSTACLE_STROKE_COLOR: 'rgb(245,255,245)'
-  OBSTACLE_FILL_COLOR:   'rgba(245,255,245,0.05)'
+  OBSTACLE_FILL_COLOR:   'rgba(245,255,245,0.1)'
 
   DEAD_DOT_COLOR:        'rgba(245,255,245,0.5)'
 
@@ -94,11 +94,7 @@ module.exports = React.createClass(
     context.stroke()
 
     #draw all obstacles
-    for obstacle in @props.gameState.obstacles
-      @drawObstacle(context, obstacle)
-
-    for antiobstacle in @props.gameState.antiobstacles
-      @drawAntiObstacle(context, antiobstacle)
+    @drawObstacles(context, @props.gameState)
 
     #draw all dots
     for team in @props.gameState.teams
@@ -163,41 +159,23 @@ module.exports = React.createClass(
       context.strokeStyle = @DOT_COLOR
     context.stroke()
 
-  drawAntiObstacle: (context, ao)->
-    context.save()
-    context.beginPath()
-    context.arc(
-      @_g2c(ao.x, ao.y)..., 
-      @_toPx(Game::ANTIOBSTACLE_RADIUS), 
-      0,
-      2*Math.PI
-    )
-
-    context.clip()
-    context.clearRect(
-      0,
-      0,
-      @state.canvasWidth,
-      @state.canvasHeight
-    )
-
-    context.restore()
-
-  drawObstacle: (context, obstacle) ->
-    context.beginPath()
-
+  drawObstacles: (context, state) ->
     context.fillStyle = @OBSTACLE_FILL_COLOR
     context.strokeStyle = @OBSTACLE_STROKE_COLOR
 
-    context.arc(
-      @_g2c(obstacle.x, obstacle.y)...,
-      @_toPx(obstacle.radius),
-      0,
-      2*Math.PI
-    )
+    for path in state.obstaclePaths
 
-    context.fill()
-    context.stroke()
+      context.beginPath()
+
+      lastPoint = path[path.length - 1]
+      context.moveTo(@_g2c(lastPoint.x, lastPoint.y)...)
+      
+      for point in path
+        context.lineTo(@_g2c(point.x, point.y)...)
+      context.closePath()
+
+      context.fill()
+      context.stroke()
 
   drawText: (context, text, color, origin) ->
     context.font = (@TEXT_SIZE*@state.scale)+'px '+@TEXT_FONT
