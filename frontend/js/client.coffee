@@ -1,57 +1,35 @@
 # The game's socket.io client and central data store
 
-page = require('page')
-Game = require('../../shared/game.coffee')
+GameStateGenerator = require('../../shared/GameStateGenerator.coffee')
 
-class Client
-  constructor: ->
-    @socket = io()
-    @game = null
-    @data =
-      playerName: '',
-      gameState: null
+module.exports = class ClientSubscription
+  
+  constructor: (@socket, @gameId, @callback) ->
+    _receivedData = (data) =>
+      window.cancelAnimationFrame(@animationRequest) if @animationRequest
 
-  setPlayerName: (playerName) ->
-    @data.playerName = playerName
-    @_update()
+      stateGenerator = new GameStateGenerator(data)
+      startTimestamp = window.performance.now() / 10
 
-  joinPublicGame: ->
-    @socket.on('joinedPublic', @_joinedPublicGame)
-    @socket.emit('joinPublic', @data.playerName)
+      animate = (timestamp) =>
+        playbackTime = Math.round(data.currentTime + (timestamp / 10) - startTimestamp)
+        gameState = stateGenerator.generateAtTime(playbackTime)
+        if gameState.updated
+          gameState.updated = false
+          @_update(gameState)
+        @animationRequest = window.requestAnimationFrame(animate)
 
-  _joinedPublicGame: (gameId) =>
-    page('/games/'+gameId)
-    @socket.removeListener('joinedPublic', @_joinedPublicGame)
+      @animationRequest = window.requestAnimationFrame(animate)
 
-  observe: (gameId) ->
-    @socket.on('data', @_receivedData)
-    @socket.emit('observe', gameId)
-
-  _receivedData: (data) =>
-    if !@game
-      @game = new Game()
-      @game.startAnimatingForPlayer this.socket.io.engine.id, (state) =>
-        @data.gameState = state
-        @_update()
-    @game.replaceData(data)
-
-  leave: ->
-    @socket.removeListener('data', @_receivedData)
-    @socket.emit('leave')
-    @game.stopAnimating()
-    @game = null
-
-  start: ->
-    @socket.emit('start')
+    @socket.on('data', _receivedData)
+    @socket.emit('subscribe', @gameId)
 
   pushMove: (move) ->
     @socket.emit('pushMove', move)
 
-  subscribe: (callback) ->
-    @callback = callback
-    @_update()
+  unsubscribe: ->
+    @socket.disconnect()
+    window.cancelAnimationFrame(@animationRequest) if @animationRequest
 
-  _update: ->
-    @callback(@data) if @callback
-
-module.exports = new Client()
+  _update: (gameState) ->
+    @callback(gameState: gameState, playerId: @socket.io.engine.id)

@@ -1,6 +1,8 @@
-Game  = require('../../../shared/game.coffee')
-React = require('react/addons')
 _     = require('lodash')
+
+StartedGameState = require('../../../shared/StartedGameState.coffee')
+FiringGameState = require('../../../shared/FiringGameState.coffee')
+Players = require('../../../shared/Players.coffee')
 
 module.exports = React.createClass(
   AXIS_COLOR:            'rgb(245,255,245)'
@@ -30,8 +32,8 @@ module.exports = React.createClass(
     # remember the aspect ratio.
     {
       scale: window.devicePixelRatio or 1
-      canvasWidth: Game::X_MAX, 
-      canvasHeight: Game::Y_MAX
+      canvasWidth: StartedGameState.XMax
+      canvasHeight: StartedGameState.YMax
     }
 
   componentDidMount: ->
@@ -41,10 +43,11 @@ module.exports = React.createClass(
     @updateCanvasSize()
     window.addEventListener('resize', @updateCanvasSize)
 
+    @flipped = @props.gameState.players.isFlipped(@props.playerId)
     @paint()
 
   tick: (animationTimestamp) ->
-    dt = animationTimestamp - @lastAnimationTimestamp
+    dt = (animationTimestamp - @lastAnimationTimestamp) / 10
     @lastAnimationTimestamp = animationTimestamp
 
     if @props.gameState.fn
@@ -64,6 +67,7 @@ module.exports = React.createClass(
     cancelAnimationFrame @tickID
 
   componentDidUpdate: ->
+    @flipped = @props.gameState.players.isFlipped(@props.playerId)
     @paint()
 
   getCanvas: ->
@@ -81,23 +85,23 @@ module.exports = React.createClass(
     )
     context.save()
 
-    context.shadowColor = @GLOW_COLOR;
-    context.shadowBlur = @GLOW_RADIUS;
+    context.shadowColor = @GLOW_COLOR
+    context.shadowBlur = @GLOW_RADIUS
 
     # Draw the axes
     context.beginPath()
     context.strokeStyle = @AXIS_COLOR
-    context.moveTo(@_g2c(-Game::X_MAX, 0)...) # x axis
-    context.lineTo(@_g2c( Game::X_MAX, 0)...)
-    context.moveTo(@_g2c(0, -Game::Y_MAX)...) # y axis
-    context.lineTo(@_g2c(0,  Game::Y_MAX)...)
+    context.moveTo(@_g2c(-StartedGameState.XMax, 0)...) # x axis
+    context.lineTo(@_g2c( StartedGameState.XMax, 0)...)
+    context.moveTo(@_g2c(0, -StartedGameState.YMax)...) # y axis
+    context.lineTo(@_g2c(0,  StartedGameState.YMax)...)
     context.stroke()
 
     #draw all obstacles
     @drawObstacles(context, @props.gameState)
 
     #draw all dots
-    for team in @props.gameState.teams
+    for team in @props.gameState.players.teams
       for player in team.players
         for dot in player.dots
           active = dot.active and player.active and team.active
@@ -125,16 +129,16 @@ module.exports = React.createClass(
   # Convert game units to canvas pixels
   _toPx: (units, vertical = false) ->
     if vertical
-      units * (0.5 * @state.canvasHeight / Game::Y_MAX)
+      units * (0.5 * @state.canvasHeight / StartedGameState.YMax)
     else
-      units * (0.5 * @state.canvasWidth / Game::X_MAX)
+      units * (0.5 * @state.canvasWidth / StartedGameState.XMax)
  
   # Convert game coordinates to canvas coordinates
   _g2c: (x,y) ->
-    flip = if @props.gameState.flipped then -1 else 1
+    flip = if @flipped then -1 else 1
     [
-      @_toPx(Game::X_MAX + (flip * x)),
-      @_toPx(Game::Y_MAX - y, true),
+      @_toPx(StartedGameState.XMax + (flip * x)),
+      @_toPx(StartedGameState.YMax - y, true),
     ]
 
   drawDot: (context, dot, dotActive) ->
@@ -146,7 +150,7 @@ module.exports = React.createClass(
     context.beginPath()
     context.arc(
       @_g2c(dot.x, dot.y)..., 
-      @_toPx(Game::DOT_RADIUS) - (scaledThickness/2), 
+      @_toPx(Players.DotRadius) - (scaledThickness/2), 
       0, 
       2*Math.PI
     )
@@ -163,7 +167,7 @@ module.exports = React.createClass(
     context.fillStyle = @OBSTACLE_FILL_COLOR
     context.strokeStyle = @OBSTACLE_STROKE_COLOR
 
-    for path in state.obstaclePaths
+    for path in state.obstacles.paths
 
       context.beginPath()
 
@@ -184,32 +188,32 @@ module.exports = React.createClass(
     context.fillText(text.toUpperCase(), @_g2c(origin.x, origin.y)...)
 
   drawEntireFunction: (context) ->
-    @tMax = @props.gameState.time - @props.gameState.fn.startTime
-    @drawFunctionSegment(context, 0, @tMax)
+    @fnX = @props.gameState.fn.x
+    @drawFunctionSegment(context, @props.gameState.fn.origin.x, @fnX)
 
   extendFunction: (dt) ->
     context = @getCanvas().getContext('2d')
-
     context.save()
-    @drawFunctionSegment(context, @tMax, @tMax + dt)
-    @tMax += dt
+
+    context.shadowColor = @GLOW_COLOR
+    context.shadowBlur = @GLOW_RADIUS
+
+    dx = dt * FiringGameState.FunctionAnimationSpeed
+    @drawFunctionSegment(context, @fnX, @fnX + dx)
+    @fnX += dx
 
     context.restore()
 
-  drawFunctionSegment: (context, t0, tMax) ->
+  drawFunctionSegment: (context, x0, xMax) ->
     context.beginPath()
     context.lineWidth = @state.scale * @FUNCTION_THICKNESS
     context.strokeStyle = @FUNCTION_COLOR
-    flip = if @props.gameState.fn.origin.x > 0 then -1 else 1
-
-    x0   = @props.gameState.fn.origin.x + (flip*Game::FN_ANIMATION_SPEED*t0)
-    xMax = @props.gameState.fn.origin.x + (flip*Game::FN_ANIMATION_SPEED*tMax)
 
     context.moveTo(@_g2c(x0, @props.gameState.fn.evaluate(x0))...)
 
     dx = 1/@_toPx(1)
 
-    for x in [x0 .. xMax] by flip*dx
+    for x in [x0 .. xMax] by @props.gameState.fn.flip * dx
       y = @props.gameState.fn.evaluate(x)
       context.lineTo(@_g2c(x, y)...)
     context.lineTo(@_g2c(xMax, @props.gameState.fn.evaluate(xMax))...)

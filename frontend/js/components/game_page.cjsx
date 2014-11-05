@@ -1,23 +1,32 @@
-React = require('react/addons')
-client = require('../client.coffee')
-
-
+Client = require('../Client.coffee')
+StartedGameState = require('../../../shared/StartedGameState.coffee')
 Lobby = require('./lobby.cjsx')
-Gameplay = require("./gameplay.cjsx")
-
+Gameplay = require('./gameplay.cjsx')
 
 module.exports = React.createClass(
+  displayName: 'GamePage'
+
+  getInitialState: ->
+    {}
+
   componentDidMount: ->
-    client.observe(this.props.params.id)
+    @client = new Client(io(), @props.params.id, (data) =>
+      @setState({data})
+      # For debugging
+      window.data = data
+    )
 
   componentWillUnmount: ->
-    client.leave()
+    @client.unsubscribe()
+
+  pushMove: (move) ->
+    @client.pushMove(move)
 
   render: ->
-    if not this.props.data.gameState
+    if not @state.data?
       <div>Loading...</div> 
-    else if not this.props.data.gameState.started
-      <Lobby data={this.props.data} />
+    else if @state.data.gameState instanceof StartedGameState
+      <Gameplay data={@state.data} pushMove={@pushMove} />
     else
-      <Gameplay data={this.props.data} />
+      <Lobby data={@state.data} pushMove={@pushMove} />
 )

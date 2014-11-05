@@ -99,7 +99,7 @@ gulp.task 'test', ->
       console.log('') for i in [1..lines]
       gulp.src('./test/**/*', read: false)
         .pipe(mocha())
-        .on('error', (e) -> console.log 'Mocha returned error(s)...')
+        .on('error', (e) -> console.log 'Mocha returned error(s): ', e.stack)
 
   runTests()
 

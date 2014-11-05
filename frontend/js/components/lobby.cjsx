@@ -1,16 +1,17 @@
-React  = require('react/addons')
-client = require('../client.coffee')
+Moves = require('../../../shared/Moves.coffee')
 
 module.exports = React.createClass(
+  displayName: 'Lobby'
+
   gameCanStart: ->
-    @props.data.gameState.teams[0].players.length > 0 &&
-    @props.data.gameState.teams[1].players.length > 0
+    @props.data.gameState.players.teams[0].players.length > 0 and
+    @props.data.gameState.players.teams[1].players.length > 0
 
   startGame: ->
-    client.start()
+    @props.pushMove(Moves.start())
 
   render: ->
-    teams = @props.data.gameState.teams.map (team) -> team.players.map (player) ->
+    teams = @props.data.gameState.players.teams.map (team) -> team.players.map (player) ->
       <li key={player.id}>{player.name}</li>
 
     <div className="row">

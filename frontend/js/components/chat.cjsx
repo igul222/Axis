@@ -1,17 +1,18 @@
 React  = require('react/addons')
-client = require('../client.coffee')
-Game = require('../../../shared/game.coffee')
+
+Moves = require('../../../shared/Moves.coffee')
 
 module.exports = React.createClass(
 	mixins: [React.addons.LinkedStateMixin]
 
-	getInitialState:->
-		{message: ""}
+	getInitialState: ->
+		message: ''
 
-	sendMessage: (evt)->
-		client.pushMove(Game.sendMessage(@state.message))
+	sendMessage: (evt) ->
 		evt.preventDefault()
-		@state.message = ""
+		# TODO
+		# client.pushMove(Moves.sendMessage(@state.message))
+		@setState(message: '')
 
 	render: ->
 		messages = @props.gameState.messages.map (message) ->
@@ -19,6 +20,7 @@ module.exports = React.createClass(
 				<div className="sender">{message.sender}</div>
 				<div className="text">{message.text}</div>
 			</li>
+
 		<div>
 			<div className="heading">Chat</div>
 			<div className="chats">
@@ -27,8 +29,8 @@ module.exports = React.createClass(
 				</ol>
 			</div>
 			<form id="chatbox">
-				<input type="text" placeholder="type a message" valueLink = {this.linkState('message')} />
-				<input type="submit" value="send" onClick ={@sendMessage} />
+				<input type="text" placeholder="type a message" valueLink={@linkState('message')} />
+				<input type="submit" value="send" onClick={@sendMessage} />
 			</form>
 		</div>
 )
