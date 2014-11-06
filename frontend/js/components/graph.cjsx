@@ -51,7 +51,7 @@ module.exports = React.createClass(
     @updateCanvasSize()
     window.addEventListener('resize', @updateCanvasSize)
 
-    @flipped = @props.data.gameState.players.isFlipped(@props.data.playerId)
+    @flip = if @props.data.gameState.players.isFlipped(@props.data.playerId) then -1 else 1
     @paint()
 
   componentWillUnmount: ->
@@ -59,7 +59,7 @@ module.exports = React.createClass(
     cancelAnimationFrame @tickID
 
   componentDidUpdate: ->
-    @flipped = @props.data.gameState.players.isFlipped(@props.data.playerId)
+    @flip = if @props.data.gameState.players.isFlipped(@props.data.playerId) then -1 else 1
     @paint()
 
   tick: (animationTimestamp) ->
@@ -105,6 +105,32 @@ module.exports = React.createClass(
     context.lineTo(@_g2c(0,  StartedGameState.YMax)...)
     context.stroke()
 
+    # label the axes
+    @drawText(
+        context,
+        '-25',
+        @TEXT_COLOR,
+        {x: -(@flip*(StartedGameState.XMax-1)), y: -1}
+      )
+    @drawText(
+        context,
+        '-15',
+        @TEXT_COLOR,
+        {x: 1, y: -14.5}
+      )
+    @drawText(
+        context,
+        '15',
+        @TEXT_COLOR,
+        {x: 1, y: 14}
+      )
+    @drawText(
+        context,
+        '25',
+        @TEXT_COLOR,
+        {x: (@flip*(StartedGameState.XMax-1)), y: -1}
+      )
+
     #draw all obstacles
     @drawObstacles(context, @props.data.gameState)
 
@@ -140,12 +166,11 @@ module.exports = React.createClass(
       units * (0.5 * @state.canvasHeight / StartedGameState.YMax)
     else
       units * (0.5 * @state.canvasWidth / StartedGameState.XMax)
- 
+  
   # Convert game coordinates to canvas coordinates
   _g2c: (x,y) ->
-    flip = if @flipped then -1 else 1
     [
-      @_toPx(StartedGameState.XMax + (flip * x)),
+      @_toPx(StartedGameState.XMax + (@flip * x)),
       @_toPx(StartedGameState.YMax - y, true),
     ]
 
