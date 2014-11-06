@@ -26,18 +26,20 @@ io.on 'connection', (socket) ->
   socket.on 'subscribe', (gameId) ->
 
     game = Game.getById(gameId)
+    if game
 
-    game.pushMove(Moves.addPlayer(socket.id), null)
-    game.subscribe socket.id, (data) ->
-      socket.emit 'data', data
+      game.pushMove(Moves.addPlayer(socket.id), null)
 
-    socket.on 'pushMove', (move) ->
-      game.pushMove(move, socket.id)
-      Game.resetOpenGame() if move.type == 'start'
+      game.subscribe socket.id, (data) ->
+        socket.emit 'data', data
 
-    socket.on 'disconnect', ->
-      game.pushMove(Moves.removePlayer(socket.id), null)
-      game.unsubscribe(socket.id)
+      socket.on 'pushMove', (move) ->
+        game.pushMove(move, socket.id)
+        Game.resetOpenGame() if move.type == 'start'
+
+      socket.on 'disconnect', ->
+        game.pushMove(Moves.removePlayer(socket.id), null)
+        game.unsubscribe(socket.id)
 
 players = 0
 app.post '/joinPublicGame', (req, res) ->

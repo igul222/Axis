@@ -43,14 +43,14 @@ module.exports = React.createClass(
     @updateCanvasSize()
     window.addEventListener('resize', @updateCanvasSize)
 
-    @flipped = @props.gameState.players.isFlipped(@props.playerId)
+    @flipped = @props.data.gameState.players.isFlipped(@props.data.playerId)
     @paint()
 
   tick: (animationTimestamp) ->
     dt = (animationTimestamp - @lastAnimationTimestamp) / 10
     @lastAnimationTimestamp = animationTimestamp
 
-    if @props.gameState.fn
+    if @props.data.gameState.fn
       @extendFunction(dt)
 
     @tickID = requestAnimationFrame @tick
@@ -67,7 +67,7 @@ module.exports = React.createClass(
     cancelAnimationFrame @tickID
 
   componentDidUpdate: ->
-    @flipped = @props.gameState.players.isFlipped(@props.playerId)
+    @flipped = @props.data.gameState.players.isFlipped(@props.data.playerId)
     @paint()
 
   getCanvas: ->
@@ -98,10 +98,10 @@ module.exports = React.createClass(
     context.stroke()
 
     #draw all obstacles
-    @drawObstacles(context, @props.gameState)
+    @drawObstacles(context, @props.data.gameState)
 
     #draw all dots
-    for team in @props.gameState.players.teams
+    for team in @props.data.gameState.players.teams
       for player in team.players
         for dot in player.dots
           active = dot.active and player.active and team.active
@@ -113,7 +113,7 @@ module.exports = React.createClass(
             {x: dot.x, y: dot.y + 1}
           )
 
-    if @props.gameState.fn
+    if @props.data.gameState.fn
       @drawEntireFunction(context)
 
     context.restore()
@@ -142,7 +142,7 @@ module.exports = React.createClass(
     ]
 
   drawDot: (context, dot, dotActive) ->
-    if dotActive and @props.gameState.time % 2000 < 1000
+    if dotActive and @props.data.gameState.timer % 200 < 100
       scaledThickness = @state.scale * @ACTIVE_DOT_THICKNESS
     else
       scaledThickness = @state.scale * @DOT_THICKNESS
@@ -188,8 +188,8 @@ module.exports = React.createClass(
     context.fillText(text.toUpperCase(), @_g2c(origin.x, origin.y)...)
 
   drawEntireFunction: (context) ->
-    @fnX = @props.gameState.fn.x
-    @drawFunctionSegment(context, @props.gameState.fn.origin.x, @fnX)
+    @fnX = @props.data.gameState.fn.x
+    @drawFunctionSegment(context, @props.data.gameState.fn.origin.x, @fnX)
 
   extendFunction: (dt) ->
     context = @getCanvas().getContext('2d')
@@ -198,7 +198,7 @@ module.exports = React.createClass(
     context.shadowColor = @GLOW_COLOR
     context.shadowBlur = @GLOW_RADIUS
 
-    dx = dt * FiringGameState.FunctionAnimationSpeed
+    dx = dt * @props.data.gameState.fn.flip * FiringGameState.FunctionAnimationSpeed
     @drawFunctionSegment(context, @fnX, @fnX + dx)
     @fnX += dx
 
@@ -209,14 +209,14 @@ module.exports = React.createClass(
     context.lineWidth = @state.scale * @FUNCTION_THICKNESS
     context.strokeStyle = @FUNCTION_COLOR
 
-    context.moveTo(@_g2c(x0, @props.gameState.fn.evaluate(x0))...)
+    context.moveTo(@_g2c(x0, @props.data.gameState.fn.evaluate(x0))...)
 
     dx = 1/@_toPx(1)
 
-    for x in [x0 .. xMax] by @props.gameState.fn.flip * dx
-      y = @props.gameState.fn.evaluate(x)
+    for x in [x0 .. xMax] by @props.data.gameState.fn.flip * dx
+      y = @props.data.gameState.fn.evaluate(x)
       context.lineTo(@_g2c(x, y)...)
-    context.lineTo(@_g2c(xMax, @props.gameState.fn.evaluate(xMax))...)
+    context.lineTo(@_g2c(xMax, @props.data.gameState.fn.evaluate(xMax))...)
 
     context.stroke()
 

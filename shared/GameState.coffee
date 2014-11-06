@@ -14,12 +14,12 @@ module.exports = class GameState
       @randSeed = old.randSeed
       @players  = old.players
       @messages = old.messages 
-      @_timer   = old._timer
+      @timer   = old.timer
     else
       @randSeed = randSeed
       @players  = new Players()
       @messages = []
-      @_timer   = 0
+      @timer   = 0
     @updated = true
 
   tick: ->
@@ -30,8 +30,8 @@ module.exports = class GameState
   # to deal with it returning something other than 'this'
   _gameStateTick: ->
     # Set updated every 500ms for animations
-    @_timer++
-    @updated = true if @_timer % 50 == 0
+    @timer++
+    @updated = true if @timer % 50 == 0
 
   handleMove: (move) ->
     switch move.type

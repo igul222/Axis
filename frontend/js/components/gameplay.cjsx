@@ -25,7 +25,7 @@ module.exports = React.createClass(
         turnTime = '--'
 
     <div>
-      <Graph gameState={gameState} />
+      <Graph data={@props.data} />
 
       <form id='controls'>
 

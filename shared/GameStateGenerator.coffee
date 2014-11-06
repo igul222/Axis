@@ -3,7 +3,7 @@ GameState = require('./GameState.coffee')
 module.exports = class GameStateGenerator
 
   constructor: (@game) ->
-    @state = GameState.new(0.5)
+    @state = GameState.new(@game.rand)
     @time = @game.moves[0].t - 1
     @nextMoveIndex = 0
     @nextMoveTime = @game.moves[0].t
