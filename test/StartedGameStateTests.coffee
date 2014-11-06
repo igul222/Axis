@@ -28,6 +28,10 @@ describe 'StartedGameState', ->
   it 'should transition players object to started', ->
     assert state.players.teams[0].players[0].dots.length == Players.DotsPerPlayer
 
+  it 'plays sounds'
+
+  it 'deletes sounds after they finish'
+
   describe 'removePlayer', ->
 
     it 'should let players kill themselves', ->
