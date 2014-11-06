@@ -60,13 +60,19 @@ module.exports = class Obstacles
     obstaclePaths
 
   hitTest: (x, y, radius = 0) ->
-    if @_antiobstacles.some((ao) => Geometry.dist({x,y}, ao) <= @constructor.BlastRadius)
-      return false
+    if radius > 0
+      return @hitTest(x + radius, y) or 
+             @hitTest(x - radius, y) or 
+             @hitTest(x, y + radius) or
+             @hitTest(x, y - radius)
+    else
+      if @_antiobstacles.some((ao) => Geometry.dist({x,y}, ao) <= @constructor.BlastRadius)
+        return false
 
-    field = (obstacle) =>
-      Math.pow(obstacle.radius / Geometry.dist({x,y}, obstacle), 2)
+      field = (obstacle) =>
+        Math.pow(obstacle.radius / Geometry.dist({x,y}, obstacle), 2)
 
-    return @_obstacles.map(field).reduce(((a,b) -> a+b), 0) >= 1
+      return @_obstacles.map(field).reduce(((a,b) -> a+b), 0) >= 1
 
   blast: (x, y) ->
     @_antiobstacles.push({x, y})

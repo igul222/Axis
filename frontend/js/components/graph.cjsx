@@ -36,6 +36,14 @@ module.exports = React.createClass(
       canvasHeight: StartedGameState.YMax
     }
 
+  render: ->
+    <div id='canvas-wrapper'>
+      <canvas
+        width={@state.canvasWidth}
+        height={@state.canvasHeight}
+      />
+    </div>
+
   componentDidMount: ->
     @lastAnimationTimestamp = 0
     @tickID = requestAnimationFrame @tick
@@ -43,6 +51,14 @@ module.exports = React.createClass(
     @updateCanvasSize()
     window.addEventListener('resize', @updateCanvasSize)
 
+    @flipped = @props.data.gameState.players.isFlipped(@props.data.playerId)
+    @paint()
+
+  componentWillUnmount: ->
+    window.removeEventListener('resize', @updateCanvasSize)
+    cancelAnimationFrame @tickID
+
+  componentDidUpdate: ->
     @flipped = @props.data.gameState.players.isFlipped(@props.data.playerId)
     @paint()
 
@@ -61,14 +77,6 @@ module.exports = React.createClass(
 
     if @state.canvasWidth != newWidth or @state.canvasHeight != newHeight
       @setState(canvasWidth: newWidth, canvasHeight: newHeight)
-
-  componentWillUnmount: ->
-    window.removeEventListener('resize', @updateCanvasSize)
-    cancelAnimationFrame @tickID
-
-  componentDidUpdate: ->
-    @flipped = @props.data.gameState.players.isFlipped(@props.data.playerId)
-    @paint()
 
   getCanvas: ->
     @getDOMNode().querySelector('canvas')
@@ -219,12 +227,4 @@ module.exports = React.createClass(
     context.lineTo(@_g2c(xMax, @props.data.gameState.fn.evaluate(xMax))...)
 
     context.stroke()
-
-  render: ->
-    <div id='canvas-wrapper'>
-      <canvas
-        width={@state.canvasWidth}
-        height={@state.canvasHeight}
-      />
-    </div>
 )

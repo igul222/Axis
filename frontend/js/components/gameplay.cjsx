@@ -43,7 +43,7 @@ module.exports = React.createClass(
         <div id='fire-wrapper'>
           <div className='huge-button-wrapper'>
             <input
-              className='XXhuge XXblack XXbutton'
+              className='huge black button'
               type='submit'
               value='FIRE'
               onClick={@fire}

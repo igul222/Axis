@@ -54,7 +54,7 @@ module.exports = class GameState
         return this
 
       else
-        throw 'unrecognized move type GameState.handleMove'
+        throw 'unrecognized move type passed to GameState.handleMove'
 
   _sendMessage: (move)->
     @messages.push(

@@ -17,12 +17,12 @@ describe 'Obstacles', ->
 
   describe '.hitTest', ->
 
-    it 'should return true for points within obstacle paths', ->
+    it 'returns true for points within obstacle paths', ->
       # Dirty hack: to get test points within obstacles, we rely on implementation details.
       for obstacle in obstacles._obstacles
         assert obstacles.hitTest(obstacle.x, obstacle.y)
 
-    it 'should return false for points outside obstacle paths', ->
+    it 'returns false for points outside obstacle paths', ->
       # Pick an x, y test point where x and y are greater than any of the points that make up
       # the obstacle paths (therefore they must be outside those paths)
 
@@ -30,6 +30,9 @@ describe 'Obstacles', ->
       y = 1 + _(obstacles.paths).flatten().pluck('y').max()
 
       assert obstacles.hitTest(x, y) == false
+
+    # TODO: implement this test (and rewrite all these tests to be a bit less hacky)
+    it 'returns false for points within a small radius of an obstacle path'
 
   it 'should be able to blast a hole in an obstacle', ->
     # Same dirty hack again
