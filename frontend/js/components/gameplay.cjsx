@@ -1,4 +1,5 @@
 Moves = require('../../../shared/Moves.coffee')
+validateExpression = require('../../../shared/validateExpression.coffee')
 Graph = require('./graph.cjsx')
 
 TypingFunctionGameState = require('../../../shared/TypingFunctionGameState.coffee')
@@ -8,7 +9,14 @@ module.exports = React.createClass(
   mixins: [React.addons.LinkedStateMixin]
 
   getInitialState: ->
-    {expression: 'sin(x)'}
+    expression: 'sin(x)'
+
+  canFire: ->
+    gameState = @props.data.gameState
+
+    gameState instanceof TypingFunctionGameState and
+    gameState.players.active().player.id == @props.data.playerId and
+    validateExpression(@state.expression)
 
   fire: (evt) ->
     @props.pushMove(Moves.fire(@state.expression))
@@ -16,6 +24,7 @@ module.exports = React.createClass(
 
   render: ->
     gameState = @props.data.gameState
+    cx = React.addons.classSet
 
     turnTime = Math.round(gameState.turnTime / 100)
     if turnTime < 10
@@ -47,7 +56,7 @@ module.exports = React.createClass(
               type='submit'
               value='FIRE'
               onClick={@fire}
-              disabled={!((gameState instanceof TypingFunctionGameState) and (gameState.players.active().player.id == @props.data.playerId))}
+              disabled={!@canFire()}
             />
           </div>
         </div>
