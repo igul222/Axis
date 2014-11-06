@@ -3,11 +3,28 @@
   line-height: 100%;
   font-weight: bold;
   border-width: 0px 1px 1px 0;
+  outline: 0;
 }
 
 .button.huge, .button.huge:active {
   font-size: 30px;
   padding: 23px;
+  border-radius: 5px;
+}
+
+// We need a wrapper with padding to compensate for the "shadow" 3D effect
+.huge-button-wrapper {
+  padding: 8px 0 0 5px;
+}
+
+.button.huge.black {
+    box-shadow: inset 0     1px  0   0   #828282, 
+                inset 0     0    0   1px #555555, 
+                      -1px  -2px 0   0   #aaa,
+                      -2px  -4px 0   0   #888,
+                      -3px  -6px 0   0   #888,               
+                      -5px  -8px 0   0   #222, 
+                      2px   2px  5px 0px rgba(0, 0, 0, 0.7);
 }
 
 .button.black {
@@ -19,18 +36,6 @@
   background-image: linear-gradient(to bottom, dimgrey, #4f4f4f 70%, #3c3c3c);
 }
 
-.button.huge.black {
-    box-shadow: inset 0 1px #828282, 
-              inset 0 0 0 1px #555555, 
-              -1px -2px #aaa,
-              
-              -2px -4px #888,
-              -3px -6px #888, 
-              
-              -5px -8px #222, 
-              2px 2px 5px 0px rgba(0, 0, 0, 0.7); // the actual shadow
-}
-
 .button.black:disabled {
   @darken-color: rgba(0,0,0,0.25);
   color: @darken-color;
@@ -38,9 +43,26 @@
   text-shadow: none;
 }
 
-// We need a wrapper with padding to compensate for the "shadow" 3D effect
-.huge-button-wrapper {
-  padding: 8px 0 0 5px;
+.button.black:hover:not([disabled]), .button.black:active:not([disabled]) {
+  background: #4f4f4f;
+  border-top-color: #494949;  
+}
+
+.button.black.huge:active:not([disabled]) {
+  border-bottom: 1px solid rgba(0, 0, 0, 1);
+  box-shadow: inset 0    1px  0   0   #828282, 
+              inset 0    0    0   1px #555555, 
+                    -2px -2px 0   0   #222;
+    // box-shadow: inset 0 1px #828282, 
+    //           inset 0 0 0 1px #555555, 
+    //           // -1px -2px #aaa,
+              
+    //           // -2px -4px #888,
+    //           // -3px -6px #888, 
+              
+    //           // -5px -8px #222, 
+    //           2px 2px 5px 0px rgba(0, 0, 0, 0.7); // the actual shadow
+              margin: -6px 0 0 -3px;
 }
 
 // .button.black:hover, .button.black:active {

@@ -1,4 +1,5 @@
 @import 'graph';
+@import 'buttons';
 
 .lcd {
   @lcd-bg: rgb(150, 150, 130);
@@ -17,8 +18,13 @@
 }
 
 @font-face {
-  font-family: Segment7;
+  font-family: 'Segment7';
   src: url('/segment7.otf');
+}
+
+@font-face {
+  font-family: '5x8 LCD HD44780U A02';
+  src: url('/5x8lcd.ttf');
 }
 
 #time-remaining-wrapper {
@@ -76,5 +82,3 @@
   .make-sm-column(3);
   .make-md-column(2);
 }
-
-@import 'buttons';
