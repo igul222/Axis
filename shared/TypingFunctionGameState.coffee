@@ -12,7 +12,7 @@ module.exports = class TypingFunctionGameState extends StartedGameState
     @turnTime = @constructor.TurnTime
 
   tick: ->
-    @_gameStateTick()
+    @_startedGameStateTick()
     @turnTime--
     if @turnTime == 0
       @players.advance()

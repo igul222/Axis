@@ -18,6 +18,8 @@ module.exports = class FiringGameState extends StartedGameState
     compiledFunction = math.compile(fireMove.expression)
     yTranslate = origin.y - compiledFunction.eval(x: 0)
 
+    @playSound('fire')
+
     @fn = {
       expression: fireMove.expression
       origin: origin
@@ -28,7 +30,7 @@ module.exports = class FiringGameState extends StartedGameState
     }
 
   tick: ->
-    @_gameStateTick()
+    @_startedGameStateTick()
 
     @fn.x += (@fn.flip * @constructor.FunctionAnimationSpeed)
     y = @fn.evaluate(@fn.x)
@@ -43,6 +45,7 @@ module.exports = class FiringGameState extends StartedGameState
 
             dot.alive = false
             @updated = true
+            @playSound('playerHit')
 
             if @players.gameOver()
               return FinishedGameState.new(this)
@@ -56,6 +59,7 @@ module.exports = class FiringGameState extends StartedGameState
 
     if hitObstacle
       @obstacles.blast(@fn.x, y)
+      @playSound('obstacleHit')
 
     if hitObstacle or !insideBounds
       @players.advance()
