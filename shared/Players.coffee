@@ -42,6 +42,9 @@ module.exports = class Players
   isFlipped: (playerId) ->
     !! _.find(@teams[1].players, (p) -> p.id == playerId)
 
+  winner: (playerId)->
+    return _.where(@get(playerId).dots, {alive: true}).length > 0
+
   ##########
   # Commands
   ##########
