@@ -62,7 +62,7 @@ module.exports = React.createClass(
         <div id='expression-wrapper'>
           <div id='expression'>
             <input type='text' valueLink={@linkState('expression')} />
-            <div id='lcd-background'>ஏஏஏஏஏஏஏஏஏஏஏஏஏஏஏஏஏஏஏஏஏஏஏஏஏஏஏஏஏஏஏஏஏஏ</div>
+            <div id='lcd-background'>ĉĉĉĉĉĉĉĉĉĉĉĉĉĉĉĉĉĉĉĉĉĉĉĉĉĉĉĉĉĉĉĉĉĉĉĉĉĉĉĉĉĉĉĉĉĉĉĉĉĉĉĉĉĉĉĉĉĉĉĉĉĉĉĉĉ</div>
           </div>
         </div>
 
