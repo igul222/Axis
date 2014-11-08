@@ -2,7 +2,7 @@ assert = require 'assert'
 
 validateExpression = require('../shared/validateExpression.coffee')
 
-describe.only 'validateExpression', ->
+describe 'validateExpression', ->
 
   describe 'valid expressions', ->
 
