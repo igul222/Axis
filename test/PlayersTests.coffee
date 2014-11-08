@@ -75,11 +75,18 @@ describe 'Players', ->
         assert players.active().player == players.teams[0].players[0]
         assert players.active().dot == players.teams[0].players[0].dots[1]
 
-    describe 'game over check', ->
+    it 'indicates that the game is not over', ->
+      assert players.gameOver() == false
 
-      it 'should be false if there is at least one living player per team', ->
-        assert players.gameOver() == false
-
-      it 'should be true if there are no more living players on one team', ->
+    describe.only 'when finished', ->
+      beforeEach ->
         players.kill(1)
+
+      it 'indicates that the game is over', ->
         assert players.gameOver() == true
+
+      it 'identifies winning players', ->
+        assert players.isWinner(2) == true
+
+      it 'identifies non-winning players', ->
+        assert players.isWinner(1) == false
