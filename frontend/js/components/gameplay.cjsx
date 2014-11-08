@@ -2,12 +2,14 @@ Moves = require('../../../shared/Moves.coffee')
 validateExpression = require('../../../shared/validateExpression.coffee')
 Graph = require('./graph.cjsx')
 play = require('play-audio')
+Graph = require('./graph.cjsx')
+LCDInput = require('./LCDInput.cjsx')
 
+Moves = require('../../../shared/Moves.coffee')
 TypingFunctionGameState = require('../../../shared/TypingFunctionGameState.coffee')
 
 module.exports = React.createClass(
   displayName: 'Gameplay'
-  mixins: [React.addons.LinkedStateMixin]
 
   getInitialState: ->
     expression: 'sin(x)'
@@ -36,8 +38,11 @@ module.exports = React.createClass(
     validateExpression(@state.expression)
 
   fire: (evt) ->
-    @props.pushMove(Moves.fire(@state.expression))
     evt.preventDefault()
+    @props.pushMove(Moves.fire(@state.expression)) if @canFire()
+
+  handleExpressionChange: (newText) ->
+    @setState(expression: newText)
 
   render: ->
     gameState = @props.data.gameState
@@ -53,17 +58,14 @@ module.exports = React.createClass(
     <div>
       <Graph data={@props.data} />
 
-      <form id='controls'>
+      <form id='controls' onSubmit={@fire} >
 
         <div id='time-remaining-wrapper'>
           <div id='time-remaining'>{ turnTime }</div>
         </div>
 
-        <div id='expression-wrapper'>
-          <div id='expression'>
-            <input type='text' valueLink={@linkState('expression')} />
-            <div id='lcd-background'>ĉĉĉĉĉĉĉĉĉĉĉĉĉĉĉĉĉĉĉĉĉĉĉĉĉĉĉĉĉĉĉĉĉĉĉĉĉĉĉĉĉĉĉĉĉĉĉĉĉĉĉĉĉĉĉĉĉĉĉĉĉĉĉĉĉ</div>
-          </div>
+        <div className='expression-wrapper'>
+          <LCDInput interactive={true} initialValue={@state.expression} onChange={@handleExpressionChange} />
         </div>
 
         <div id='fire-wrapper'>
@@ -72,7 +74,6 @@ module.exports = React.createClass(
               className='huge black button'
               type='submit'
               value='FIRE'
-              onClick={@fire}
               disabled={!@canFire()}
             />
           </div>

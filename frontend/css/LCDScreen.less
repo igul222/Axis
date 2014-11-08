@@ -1,0 +1,10 @@
+.lcd-screen {
+  @lcd-bg: rgb(150, 150, 130);
+  background: linear-gradient(
+    lighten(@lcd-bg, 10%), 
+    darken(@lcd-bg, 10%)
+  );
+
+  border: 1px solid rgb(30,30,30);
+  box-shadow: inset 0 3px 10px rgba(0, 0, 0, 0.75);
+}
