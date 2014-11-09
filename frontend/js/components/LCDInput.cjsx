@@ -52,6 +52,10 @@ module.exports = React.createClass(
           @pollingTimerId = window.requestAnimationFrame(poll)
       poll()
 
+  handleChange: (e) ->
+    @setState(value: e.target.value)
+    @props.onChange(e.target.value)
+
   startBlink: ->
     @stopBlink()
     @setState(cursorBlink: true)
@@ -90,7 +94,6 @@ module.exports = React.createClass(
     text
 
   render: ->
-
     <div className={React.addons.classSet(expression: true, focused: @state.focused)}>
       <div className='expression-inner-wrapper'>
         <div className='expression-background-text' ref='displayBackground' >{(@_displayCursorChar for i in [1..100]).join('')}</div>
@@ -99,7 +102,8 @@ module.exports = React.createClass(
           className='expression-text'
           ref='input'
           type='text'
-          valueLink={@linkState('value')}
+          value={@state.value}
+          onChange={@handleChange}
           onFocus={@handleFocus}
           onBlur={@handleBlur}
           onKeyDown={@handleKeyDown}
