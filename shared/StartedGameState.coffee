@@ -33,9 +33,7 @@ module.exports = class StartedGameState extends GameState
     switch move.type
 
       when 'removePlayer'
-        # TODO: something like @advanceTurn() if dot.active
-        # TODO: look into this.. something is very weird.
-        if move.agentId == move.playerId
+        if move.agentId == null
           @players.kill(move.playerId)
           if @players.gameOver()
             return new FinishedGameState(this)

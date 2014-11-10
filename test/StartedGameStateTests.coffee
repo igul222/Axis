@@ -34,30 +34,30 @@ describe 'StartedGameState', ->
 
   describe 'removePlayer', ->
 
-    it 'should let players kill themselves', ->
+    it 'lets the server kill players', ->
       sinon.spy(state.players, 'kill')
       move = Moves.removePlayer(1)
-      move.agentId = 1
+      move.agentId = null
       state = state.handleMove(move)
       assert state.players.kill.calledWith(1)
 
-    it 'should not let players kill other players', ->
+    it 'does not let players kill other players', ->
       sinon.spy(state.players, 'kill')
       move = Moves.removePlayer(1)
-      move.agentId = 2
+      move.agentId = 1
       state = state.handleMove(move)
       assert state.players.kill.notCalled
 
     it 'should advance turns if the killed player was active', ->
       sinon.spy(state.players, 'advance')
       move = Moves.removePlayer(1)
-      move.agentId = 1
+      move.agentId = null
       state = state.handleMove(move)
       assert state.players.active().player == state.players.get(2)
 
     it 'should end the game if the game is over', ->
       move = Moves.removePlayer(2)
-      move.agentId = 2
+      move.agentId = null
       state = state.handleMove(move)
 
       assert state instanceof FinishedGameState

@@ -56,6 +56,11 @@ describe 'Players', ->
       assert players.teams[0].players[0].dots[0].alive == false
       assert players.teams[0].players[0].dots[1].alive == false
 
+    it 'should do nothing when killing guests', ->
+      players.add(3)
+      players.kill(3)
+      assert players.get(3)
+
     it "determines whether a player's screen is flipped", ->
       assert players.isFlipped(1) == false
       assert players.isFlipped(2) == true
@@ -78,7 +83,7 @@ describe 'Players', ->
     it 'indicates that the game is not over', ->
       assert players.gameOver() == false
 
-    describe.only 'when finished', ->
+    describe 'when finished', ->
       beforeEach ->
         players.kill(1)
 

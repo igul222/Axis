@@ -53,9 +53,6 @@ module.exports = class GameState
           @updated = true
         return this
 
-      else
-        throw 'unrecognized move type passed to GameState.handleMove'
-
   _sendMessage: (move)->
     @messages.push(
       sender: @players.get(move.agentId).name

@@ -21,6 +21,12 @@ if app.get('env')=='development'
 else 
   app.use require('morgan')('default')
 
+openGamePlayers = 0
+
+app.post '/joinPublicGame', (req, res) ->
+  Game.resetOpenGame() if openGamePlayers++ % 4 == 0
+  res.send(Game.openGameId)
+
 # Game subscription socket handlers
 io.on 'connection', (socket) ->
   socket.on 'subscribe', (gameId) ->
@@ -35,16 +41,13 @@ io.on 'connection', (socket) ->
 
       socket.on 'pushMove', (move) ->
         game.pushMove(move, socket.id)
-        Game.resetOpenGame() if move.type == 'start'
+        if move.type == 'start'
+          Game.resetOpenGame()
+          openGamePlayers = 0
 
       socket.on 'disconnect', ->
-        game.pushMove(Moves.removePlayer(socket.id), null)
         game.unsubscribe(socket.id)
-
-players = 0
-app.post '/joinPublicGame', (req, res) ->
-  Game.resetOpenGame() if players++ % 4 == 0
-  res.send(Game.openGameId)
+        game.pushMove(Moves.removePlayer(socket.id), null)
 
 # Serve index.jade for all other routes
 app.set 'views', __dirname + '/backend'
