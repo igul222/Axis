@@ -10,8 +10,7 @@ module.exports = React.createClass(
 
 	sendMessage: (evt) ->
 		evt.preventDefault()
-		# TODO
-		# client.pushMove(Moves.sendMessage(@state.message))
+		@props.pushMove(Moves.sendMessage(@state.message))
 		@setState(message: '')
 
 	render: ->
