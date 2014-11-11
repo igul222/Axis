@@ -9,17 +9,19 @@ module.exports = class ClientSubscription
       window.cancelAnimationFrame(@animationRequest) if @animationRequest
 
       stateGenerator = new GameStateGenerator(data)
-      startTimestamp = window.performance.now() / 10
 
-      animate = (timestamp) =>
-        playbackTime = Math.round(data.currentTime + (timestamp / 10) - startTimestamp)
-        gameState = stateGenerator.generateAtTime(playbackTime)
-        if gameState.updated
-          gameState.updated = false
-          @_update(gameState)
+      @animationRequest = window.requestAnimationFrame (startTimestamp) =>
+        startTimestamp = startTimestamp / 10
+
+        animate = (timestamp) =>
+          playbackTime = Math.round(data.currentTime + (timestamp / 10) - startTimestamp)
+          gameState = stateGenerator.generateAtTime(playbackTime)
+          if gameState.updated
+            gameState.updated = false
+            @_update(gameState)
+          @animationRequest = window.requestAnimationFrame(animate)
+
         @animationRequest = window.requestAnimationFrame(animate)
-
-      @animationRequest = window.requestAnimationFrame(animate)
 
     @socket.on('data', _receivedData)
     @socket.emit('subscribe', @gameId)
