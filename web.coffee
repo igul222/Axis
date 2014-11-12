@@ -30,7 +30,6 @@ app.post '/joinPublicGame', (req, res) ->
 # Game subscription socket handlers
 io.on 'connection', (socket) ->
   socket.on 'subscribe', (gameId) ->
-
     game = Game.getById(gameId)
     if game
 

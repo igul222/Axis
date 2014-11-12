@@ -1,0 +1,47 @@
+@import 'Computer';
+@import 'FinishedGame';
+@import 'StartedGame';
+
+#wrapper {
+ padding-right: 250px;
+
+  #sidebar-toggle {
+    display: none;
+  }
+
+  #sidebar-wrapper {
+    position: fixed;
+    right: 0;
+    width: 250px;
+    height: 100%;
+    z-index: 1000;
+
+    background: #000;
+  }
+
+  #page-content-wrapper {
+    max-width: 1200px;
+    margin: 0 auto;
+  }
+}
+
+@media (max-width: @screen-xs-max) {
+  #wrapper {
+    padding-right: 0;
+
+    #sidebar-toggle {
+      display: block;
+    }
+  
+    #sidebar-wrapper {
+      display: none;
+    }
+  }
+
+  #wrapper.active {
+    #sidebar-wrapper {
+      display: block;
+      width: 100%;
+    }
+  }
+}

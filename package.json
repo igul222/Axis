@@ -31,6 +31,7 @@
     "socket.io": "^1.0.4",
     "tiny-lr": "0.0.9",
     "uuid": "^1.4.1",
+    "viewport-units-buggyfill": "^0.4.1",
     "vinyl-source-stream": "^0.1.1"
   },
   "devDependencies": {

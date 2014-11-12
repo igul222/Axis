@@ -1,8 +1,9 @@
 window.React = require('react/addons') # Global require for dev tools
+require('viewport-units-buggyfill').init()
 
-page  = require('page')
-WelcomePage = require('./components/welcome_page.cjsx')
-GamePage    = require('./components/game_page.cjsx')
+page = require('page')
+Home = require('./components/Home.cjsx')
+Game = require('./components/Game.cjsx')
 
 window.pp = (x) -> console.log(JSON.stringify(x,null,4))
 
@@ -13,9 +14,9 @@ App = React.createClass(
     # Choose different content based on the current route context.
     switch this.props.route
       when 'welcome'
-        return <WelcomePage />
+        return <Home />
       when 'game'
-        return <GamePage params={this.props.params} />
+        return <Game params={this.props.params} />
       else
         return <div />
 )

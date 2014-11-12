@@ -37,12 +37,10 @@ module.exports = React.createClass(
     }
 
   render: ->
-    <div id='canvas-wrapper'>
-      <canvas
-        width={@state.canvasWidth}
-        height={@state.canvasHeight}
-      />
-    </div>
+    <canvas
+      width={@state.canvasWidth}
+      height={@state.canvasHeight}
+    />
 
   componentDidMount: ->
     @lastAnimationTimestamp = 0
@@ -79,7 +77,7 @@ module.exports = React.createClass(
       @setState(canvasWidth: newWidth, canvasHeight: newHeight)
 
   getCanvas: ->
-    @getDOMNode().querySelector('canvas')
+    @getDOMNode()
 
   paint: (context) ->
     canvas = @getCanvas()
