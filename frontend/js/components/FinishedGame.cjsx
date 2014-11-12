@@ -8,7 +8,7 @@ module.exports = React.createClass(
     joinPublicGame()
 
   render: ->
-    content = <div id="finished-screen-text">
+    content = <div className="finished-game-text">
       {
         if @props.data.gameState.players.isWinner(@props.data.playerId)
           "YOU WIN!"

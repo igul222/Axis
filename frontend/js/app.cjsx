@@ -13,7 +13,7 @@ App = React.createClass(
   render: ->
     # Choose different content based on the current route context.
     switch this.props.route
-      when 'welcome'
+      when 'home'
         return <Home />
       when 'game'
         return <Game params={this.props.params} />
@@ -25,5 +25,5 @@ app = React.renderComponent(<App />, document.body)
 
 goto = (route) -> ((ctx) -> app.setProps(route: route, params: ctx.params))
 page '/games/:id', goto('game')
-page '/', goto('welcome')
+page '/', goto('home')
 page()

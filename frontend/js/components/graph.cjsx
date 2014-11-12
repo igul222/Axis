@@ -43,8 +43,9 @@ module.exports = React.createClass(
     />
 
   componentDidMount: ->
-    @lastAnimationTimestamp = 0
-    @tickID = requestAnimationFrame @tick
+    unless @props.notAnimated
+      @lastAnimationTimestamp = 0
+      @tickID = requestAnimationFrame @tick
 
     @updateCanvasSize()
     window.addEventListener('resize', @updateCanvasSize)
@@ -54,7 +55,8 @@ module.exports = React.createClass(
 
   componentWillUnmount: ->
     window.removeEventListener('resize', @updateCanvasSize)
-    cancelAnimationFrame @tickID
+    unless @props.notAnimated
+      cancelAnimationFrame @tickID
 
   componentDidUpdate: ->
     @flip = if @props.data.gameState.players.isFlipped(@props.data.playerId) then -1 else 1

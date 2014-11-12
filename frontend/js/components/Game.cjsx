@@ -49,6 +49,7 @@ module.exports = React.createClass(
             <div />
         }
       </div>
+
       <div id="page-content-wrapper">
         <div className="container-fluid">
           {
