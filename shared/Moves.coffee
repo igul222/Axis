@@ -20,6 +20,14 @@ module.exports = Moves =
   fire: (expression) ->
     return {type: 'fire', expression: expression}
 
+  # Switch the player with the given id to the other team
+  switchTeam: (playerId) ->
+    return {type: 'switchTeam', playerId: playerId}
+
+  # Change the current agent's player's name to the given name
+  changeName: (name)->
+    return {type: 'changeName', name: name}
+
   # Send chat message from player
   # Any player can make this move at any time
   sendMessage: (message) ->
