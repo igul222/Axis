@@ -3,15 +3,15 @@ MarchingSquares = require('./MarchingSquares.js')
 
 module.exports = class Obstacles
   @Count: 10
-  @MinRadius: 0
-  @MaxRadius: 5
+  @MinRadius: 1
+  @MaxRadius: 3
   @PathResolution: 0.5
   @BlastRadius: 1
 
   constructor: (rand, xMax, yMax) ->
     @_obstacles     = @_generateObstacles(rand, xMax, yMax)
     @_antiobstacles = []
-    @paths = @_generateObstaclePaths()
+    @_generateObstaclePaths()
 
   _generateObstacles: (rand, xMax, yMax) ->
     StartedGameState = require('./StartedGameState.coffee')
@@ -57,7 +57,7 @@ module.exports = class Obstacles
         path = MarchingSquares.walkPerimeter(hitTest, x, y, cellSize)
         obstaclePaths.push(path)
 
-    obstaclePaths
+    @paths = obstaclePaths
 
   hitTest: (x, y, radius = 0) ->
     if radius > 0
@@ -76,4 +76,4 @@ module.exports = class Obstacles
 
   blast: (x, y) ->
     @_antiobstacles.push({x, y})
-    @paths = @_generateObstaclePaths()
+    @_generateObstaclePaths()

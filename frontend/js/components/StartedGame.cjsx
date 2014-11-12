@@ -40,8 +40,7 @@ module.exports = React.createClass(
 
   render: ->
     <Computer
-      started={true}
-      content={<Graph data={@props.data} pushMove={@props.pushMove} />}
+      content={<Graph data={@props.data} />}
       timeRemaining={('0'+Math.round(@props.data.gameState.turnTime/100)).slice(-2)}
       value={@state.expression}
       onValueChange={@handleExpressionChange}
