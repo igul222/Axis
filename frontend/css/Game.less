@@ -1,6 +1,7 @@
-@import 'Computer';
-@import 'FinishedGame';
+@import 'Chat';
+@import 'Lobby';
 @import 'StartedGame';
+@import 'FinishedGame';
 
 #wrapper {
  padding-right: 250px;
@@ -15,13 +16,39 @@
     width: 250px;
     height: 100%;
     z-index: 1000;
-
-    background: #000;
   }
 
+  // More things of which I am not proud: #page-content-wrapper
+  // needs to "aspect fit" to its container. To do so, it uses
+  // CSS3 viewport units, meaning it depends on EVERY PARENT ELEMENT.
+  // But that's not all folks! The aspect ratio depends on the height,
+  // which introduces a dependency on EVERY CHILD ELEMENT. Yup.
+  //
+  // Basically you should just give up on whatever it is you were
+  // trying to do that led you here.
   #page-content-wrapper {
-    max-width: 1200px;
-    margin: 0 auto;
+    // width = 40px + 1.667*(height - 146px)
+    // height = ((width - 40px) / 1.667) + 146px
+    width: ~"calc(100vw - 250px)";
+    max-height: 100vh;
+    max-width: ~"calc(1.667*(100vh - 146px) + 40px)";
+
+    // horizontal center
+    margin: auto;
+
+    // vertical center
+    position: relative;
+    top: 50vh;
+    -webkit-transform: translateY(-50%);
+    -ms-transform: translateY(-50%);
+    transform: translateY(-50%);
+    padding: 10px;
+    .computer-wrapper {
+      // margin: 10px;
+      padding: 10px;
+      background-color: #444;
+      border-radius: 10px;
+    }
   }
 }
 

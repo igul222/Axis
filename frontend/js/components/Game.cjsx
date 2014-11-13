@@ -17,7 +17,7 @@ module.exports = React.createClass(
   componentWillMount: ->
     @initializeClient(@props.params.id)
 
-  componentDidUnmount: ->
+  componentWillUnmount: ->
     @client.unsubscribe()
 
   componentWillReceiveProps: (nextProps) ->
@@ -52,7 +52,7 @@ module.exports = React.createClass(
       </div>
 
       <div id="page-content-wrapper">
-        <div className="container-fluid">
+        <div className="computer-wrapper">
           {
             if not @state.data?
               <div />

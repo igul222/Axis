@@ -27,6 +27,7 @@ module.exports = React.createClass(
           <Button 
             title={@props.buttonTitle} 
             disabled={!@props.buttonEnabled} 
+            color={@props.buttonColor}
           />
         </div>
       </form>

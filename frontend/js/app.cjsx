@@ -1,3 +1,5 @@
+require('viewport-units-buggyfill').init()
+
 window.React = require('react/addons') # Global require for dev tools
 
 page = require('page')

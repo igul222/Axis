@@ -27,6 +27,10 @@ app.post '/joinPublicGame', (req, res) ->
   Game.resetOpenGame() if openGamePlayers++ % 4 == 0
   res.send(Game.openGameId)
 
+app.post '/createPrivateGame', (req, res) ->
+  gameId = Game.createPrivateGame()
+  res.send(gameId)
+
 # Game subscription socket handlers
 io.on 'connection', (socket) ->
   socket.on 'subscribe', (gameId) ->
@@ -45,6 +49,7 @@ io.on 'connection', (socket) ->
           openGamePlayers = 0
 
       socket.on 'disconnect', ->
+        console.log 'DISCONNECT'
         game.unsubscribe(socket.id)
         game.pushMove(Moves.removePlayer(socket.id), null)
 

@@ -1,11 +1,11 @@
-joinPublicGame = require('../joinPublicGame.coffee')
+joinGame = require('../joinGame.coffee')
 Computer = require('./Computer.cjsx')
 
 module.exports = React.createClass(
   displayName: 'FinishedGame'
     
   handleSubmit: ->
-    joinPublicGame()
+    joinGame.public()
 
   render: ->
     content = <div className="finished-game-text">
@@ -23,6 +23,7 @@ module.exports = React.createClass(
       value="Press PLAY to play again..."
       buttonTitle='PLAY'
       buttonEnabled={true}
+      buttonColor='black'
       onSubmit={@handleSubmit}
     />
 )

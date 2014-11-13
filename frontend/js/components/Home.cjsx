@@ -6,7 +6,7 @@ GameState = require('../../../shared/GameState.coffee')
 Moves = require('../../../shared/Moves.coffee')
 Players = require('../../../shared/Players.coffee')
 
-joinPublicGame = require('../joinPublicGame.coffee')
+joinGame = require('../joinGame.coffee')
 
 Step = React.createClass(
   displayName: 'Step'
@@ -35,7 +35,10 @@ module.exports = React.createClass(
   displayName: 'Home'
 
   handleJoinGame: ->
-    joinPublicGame()
+    joinGame.public()
+
+  handleCreateGame: ->
+    joinGame.private()
 
   handleWatchVideo: ->
     window.location = "https://www.youtube.com/watch?v=yO0aEv_0Aeo"
@@ -71,9 +74,14 @@ module.exports = React.createClass(
         <div className="home-left">
           <img className='logo' src="/logo.png" />
           <Button
-            title='Join Game'
+            title='Join Public Game'
             onClick={@handleJoinGame}
             color='red'
+          />
+          <Button
+            title='Create Private Game'
+            onClick={@handleCreateGame}
+            color='green'
           />
           <Button
             title='Watch Video'

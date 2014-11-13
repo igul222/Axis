@@ -46,6 +46,7 @@ module.exports = React.createClass(
       onValueChange={@handleExpressionChange}
       buttonTitle='FIRE'
       buttonEnabled={@canFire()}
+      buttonColor='black'
       onSubmit={@handleSubmit}
     />
 )

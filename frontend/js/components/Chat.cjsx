@@ -15,19 +15,17 @@ module.exports = React.createClass(
 
 	render: ->
 		messages = @props.gameState.messages.map (message) ->
-			<li className="message" key={message.time}>
-				<div className="sender">{message.sender}</div>
-				<div className="text">{message.text}</div>
-			</li>
-
-		<div>
-			<div className="heading">Chat</div>
-			<div className="chats">
-				<ol className="messageList">
-					{messages}
-				</ol>
+			<div className="message" key={message.time}>
+				<span className="sender">{message.sender}: </span>
+				<span className="text">{message.text}</span>
 			</div>
-			<form id="chatbox">
+
+		<div className="chat">
+			<h2 className="chat-heading">MESSAGES</h2>
+			<div className="chats">
+				{messages}
+			</div>
+			<form>
 				<input type="text" placeholder="type a message" valueLink={@linkState('message')} />
 				<input type="submit" value="send" onClick={@sendMessage} />
 			</form>

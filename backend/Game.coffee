@@ -12,6 +12,11 @@ module.exports = class Game
     @openGameId = uuid.v4()
     @games[@openGameId] = new Game()
 
+  @createPrivateGame: ->
+    gameId = uuid.v4()
+    @games[gameId] = new Game()
+    return gameId
+
   constructor: ->
     @moves = []
     @rand = Math.random()
