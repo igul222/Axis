@@ -66,9 +66,10 @@ module.exports = React.createClass(
     {gameState: state, playerId: 1}
 
   render: ->
-    <div className="container">
+    <div className="container home-container">
       <div className="row">
         <div className="home-left">
+          <img className='logo' src="/logo.png" />
           <Button
             title='Join Game'
             onClick={@handleJoinGame}
@@ -79,9 +80,12 @@ module.exports = React.createClass(
             onClick={@handleWatchVideo}
             color='blue'
           />
+          <p>Made by <a href="http://twitter.com/zan2434">Zain</a> & <a href="http://twitter.com/__ishaan">Ishaan</a>, based on <a href="http://graphwar.com">Graphwar</a>.</p>
         </div>
 
         <div className="home-right">
+
+          <h1>How to Play</h1>
 
           <Step data={@getDataForStep(0)}>
             <Instr>In this game you fire missiles at your enemies, like any other game, but you <strong>aim</strong> with mathematical functions.</Instr>
