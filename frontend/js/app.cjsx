@@ -1,5 +1,4 @@
 window.React = require('react/addons') # Global require for dev tools
-require('viewport-units-buggyfill').init()
 
 page = require('page')
 Home = require('./components/Home.cjsx')
