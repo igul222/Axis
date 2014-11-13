@@ -53,6 +53,9 @@ module.exports = class GameState
           @updated = true
         return this
 
+      else
+        return this
+
   _sendMessage: (move)->
     @messages.push(
       sender: @players.get(move.agentId).name
