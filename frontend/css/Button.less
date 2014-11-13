@@ -4,6 +4,21 @@
   font-weight: bold;
   border-width: 0px 1px 1px 0;
   outline: 0;
+
+  @text-color: #E6DB69;
+  color: lighten(@text-color,25%);
+  text-shadow: 0 0 5px @text-color;
+}
+
+.button:focus:not([disabled]) {
+  background: #55f !important;
+}
+
+.button:disabled {
+  @darken-color: rgba(0,0,0,0.25);
+  color: @darken-color;
+  -webkit-text-stroke: 1px @darken-color;
+  text-shadow: none;
 }
 
 .button.huge, .button.huge:active {
@@ -12,67 +27,68 @@
   border-radius: 5px;
 }
 
+.button.huge:active:not([disabled]) {
+  margin: -6px 3px 6px -3px;
+}
+
 // We need a wrapper with padding to compensate for the "shadow" 3D effect
 .huge-button-wrapper {
   padding: 8px 0 0 5px;
 }
 
-.button.huge.black {
-    box-shadow: inset 0     1px  0   0   #828282, 
-                inset 0     0    0   1px #555555, 
-                      -1px  -2px 0   0   #aaa,
-                      -2px  -4px 0   0   #888,
-                      -3px  -6px 0   0   #888,               
-                      -5px  -8px 0   0   #222, 
+/*******
+  COLORS
+  ******/
+
+.colored-button(@color) {
+  border-color: lighten(@color, -2%) lighten(@color, -8%) lighten(@color, -16%);
+  background-image: linear-gradient(
+    to bottom, 
+    lighten(@color, 8%), 
+    lighten(@color, -2%) 70%, 
+    lighten(@color, -9%)
+  );
+
+  &.huge {
+    box-shadow: inset 0     1px  0   0   lighten(@color, 18%), 
+                inset 0     0    0   1px lighten(@color, 0%), 
+                      -1px  -2px 0   0   lighten(@color, 34%),
+                      -2px  -4px 0   0   lighten(@color, 20%),
+                      -3px  -6px 0   0   lighten(@color, 20%),               
+                      -5px  -8px 0   0   lighten(@color, -20%), 
                       2px   2px  5px 0px rgba(0, 0, 0, 0.7);
+  }
+
+  &:hover:not([disabled]), &:active:not([disabled]) {
+    background: lighten(@color, -2%);
+    border-top-color: lighten(@color, -4%);      
+  }
+
+  &.huge:active:not([disabled]) {
+    border-bottom: 1px solid #000;
+    box-shadow: inset 0    1px  0   0   lighten(@color, 18%), 
+                inset 0    0    0   1px lighten(@color, 0%), 
+                      -2px -2px 0   0   lighten(@color, -20%);
+  }
 }
 
-.button.black {
-  @text-color: #E6DB69;
-  color: lighten(@text-color,25%);
-  text-shadow: 0 0 5px @text-color;
+.button {
+  &.gray {
+    .colored-button(hsl(0, 0%, 33%));
+  }
 
-  border-color: #505050 #414141 #2c2c2c;
-  background-image: linear-gradient(to bottom, dimgrey, #4f4f4f 70%, #3c3c3c);
-}
+  &.red {
+    .colored-button(hsl(0, 75%, 33%));
+  }
 
-.button.black:disabled {
-  @darken-color: rgba(0,0,0,0.25);
-  color: @darken-color;
-  -webkit-text-stroke: 1px @darken-color;
-  text-shadow: none;
-}
-
-.button.black:hover:not([disabled]), .button.black:active:not([disabled]) {
-  background: #4f4f4f;
-  border-top-color: #494949;  
-}
-
-.button.black.huge:active:not([disabled]) {
-  border-bottom: 1px solid rgba(0, 0, 0, 1);
-  box-shadow: inset 0    1px  0   0   #828282, 
-              inset 0    0    0   1px #555555, 
-                    -2px -2px 0   0   #222;
-    // box-shadow: inset 0 1px #828282, 
-    //           inset 0 0 0 1px #555555, 
-    //           // -1px -2px #aaa,
-              
-    //           // -2px -4px #888,
-    //           // -3px -6px #888, 
-              
-    //           // -5px -8px #222, 
-    //           2px 2px 5px 0px rgba(0, 0, 0, 0.7); // the actual shadow
-              margin: -6px 0 0 -3px;
+  &.blue {
+    .colored-button(hsl(200, 50%, 15%));
+  }
 }
 
 // .button.black:focus:not([disabled]) {
 //   background-color: #55f !important;
 // }
-
-
-.button.black:focus:not([disabled]) {
-  background: #55f !important;
-}
 
 // .button.black:hover, .button.black:active {
 //   background: #4f4f4f;

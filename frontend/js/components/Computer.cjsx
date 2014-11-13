@@ -1,4 +1,5 @@
 LCDInput = require('./LCDInput.cjsx')
+Button = require('./Button.cjsx')
 
 module.exports = React.createClass(
   displayName: 'Computer'
@@ -23,14 +24,10 @@ module.exports = React.createClass(
           <LCDInput value={@props.value} onChange={@props.onValueChange} />
         </div>
         <div id='fire-wrapper'>
-          <div className='huge-button-wrapper'>
-            <input
-              className='huge black button'
-              type='submit'
-              value={@props.buttonTitle}
-              disabled={!@props.buttonEnabled}
-            />
-          </div>
+          <Button 
+            title={@props.buttonTitle} 
+            disabled={!@props.buttonEnabled} 
+          />
         </div>
       </form>
     </div>

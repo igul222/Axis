@@ -1,9 +1,12 @@
+Button = require('./Button.cjsx')
 Computer = require('./Computer.cjsx')
 Graph = require('./Graph.cjsx')
 
 GameState = require('../../../shared/GameState.coffee')
 Moves = require('../../../shared/Moves.coffee')
 Players = require('../../../shared/Players.coffee')
+
+joinPublicGame = require('../joinPublicGame.coffee')
 
 Step = React.createClass(
   displayName: 'Step'
@@ -30,6 +33,12 @@ Instr = React.createClass(
 
 module.exports = React.createClass(
   displayName: 'Home'
+
+  handleJoinGame: ->
+    joinPublicGame()
+
+  handleWatchVideo: ->
+    window.location = "https://www.youtube.com/watch?v=yO0aEv_0Aeo"
 
   getDataForStep: (step)->
     state = GameState.new(0.314159)
@@ -59,14 +68,20 @@ module.exports = React.createClass(
   render: ->
     <div className="container">
       <div className="row">
-
-        <div className="col-sm-4">
-          <div className="video-container">
-            <iframe className="video" width="300" height="167" src="//www.youtube.com/embed/yO0aEv_0Aeo?hd=1&rel=0&autohide=1&showinfo=0" frameBorder="0" allowFullScreen></iframe>
-          </div>
+        <div className="home-left">
+          <Button
+            title='Join Game'
+            onClick={@handleJoinGame}
+            color='red'
+          />
+          <Button
+            title='Watch Video'
+            onClick={@handleWatchVideo}
+            color='blue'
+          />
         </div>
 
-        <div className="col-sm-8">
+        <div className="home-right">
 
           <Step data={@getDataForStep(0)}>
             <Instr>In this game you fire missiles at your enemies, like any other game, but you <strong>aim</strong> with mathematical functions.</Instr>

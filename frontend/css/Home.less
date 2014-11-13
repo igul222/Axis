@@ -1,28 +1,66 @@
-.video-container{
-	position: fixed;
-	top: 270px;
+@media (max-width: @screen-xs-max) {
+	.home-left {
+		.make-xs-column(12);
+	}
+
+	.home-right {
+		.make-xs-column(12);
+	}
 }
 
-.step {
-	background-color: #aaa;
-	padding: 10px;
-	border-radius: 10px;
-	margin-bottom: 20px;
+@media (min-width: @screen-sm-min) {
+	.home-left {
+		position: fixed;
+
+		@columns: 4;
+		@media (max-width: @screen-sm-max) {
+		  width: @container-sm * (@columns / @grid-columns);
+		}
+		@media (min-width: @screen-md-min) and (max-width: @screen-md-max) {
+		  width: @container-md * (@columns / @grid-columns);
+		}
+		@media (min-width: @screen-lg-min) {
+		  width: @container-lg * (@columns / @grid-columns);
+		}
+	  padding-left:  (@grid-gutter-width / 2);
+	  padding-right: (@grid-gutter-width / 2);
+	}
+
+	.home-right {
+		.make-sm-column(8);
+		.make-sm-column-push(4);
+	}
 }
 
-.instructions-container {
-	padding: 0;
-	margin: 0;
+.home-left {
+	div {
+		margin-bottom: 8px;
+	}
+}
 
-	background-color: #111;
-	
-	color: rgb(245,255,215);
-	text-shadow: 0px 0px 5px rgb(0,255,0);
 
-	border-radius: 10px;
-	font-family: "Monaco";
+.home-right {
+	.step {
+		background-color: #aaa;
+		padding: 10px;
+		border-radius: 10px;
+		margin-bottom: 20px;
+	}
 
-	.instructions{
-		padding: 15px;
+	.instructions-container {
+		padding: 0;
+		margin: 0;
+
+		background-color: #111;
+		
+		color: rgb(245,255,215);
+		text-shadow: 0px 0px 5px rgb(0,255,0);
+
+		border-radius: 10px;
+		font-family: "Monaco";
+
+		.instructions{
+			padding: 15px;
+		}
 	}
 }
