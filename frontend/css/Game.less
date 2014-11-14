@@ -27,13 +27,21 @@
   //
   // Basically you should just give up on whatever it is you were
   // trying to do that led you here.
-  -webkit-transform-style: preserve-3d;
-  -moz-transform-style: preserve-3d;
-  transform-style: preserve-3d;
+  .page-content-outer-wrapper {
+    position: relative;
+    width: 100%;
+    height: 100vh;
+
+    @media (max-width: @screen-xs-max) {
+      height: ~"calc(100vh - 40px)";
+    }
+  }
+
   #page-content-wrapper {
     // width = 40px + 1.667*(height - 146px)
     // height = ((width - 40px) / 1.667) + 146px
     width: ~"calc(100vw - 250px)";
+    height: ~"calc((((100vw - 250px) - 40px) / 1.667) + 146px)";
     max-height: 100vh;
     max-width: ~"calc(1.667*(100vh - 146px) + 40px)";
 
@@ -41,12 +49,14 @@
     margin: auto;
 
     // vertical center
-    position: relative;
-    top: 50vh;
-    -webkit-transform: translateY(-50%);
-    -ms-transform: translateY(-50%);
-    transform: translateY(-50%);
+    position: absolute;
+    top: 0;
+    bottom: 0;
+    left: 0;
+    right: 0;
+    
     padding: 10px;
+
     .computer-wrapper {
       // margin: 10px;
       padding: 10px;
@@ -62,10 +72,21 @@
 
     #sidebar-toggle {
       display: block;
+      height: 40px;
+      padding: 10px;
+      text-align: center;
+      background-color: #000;
     }
   
     #sidebar-wrapper {
       display: none;
+    }
+
+    #page-content-wrapper {
+      width: 100vw;
+      height: ~"calc(((100vw - 40px) / 1.667) + 78px)";
+      max-height: ~"calc(100vh - 40px)";
+      max-width: ~"calc(1.667*(100vh - 118px) + 40px)";
     }
   }
 

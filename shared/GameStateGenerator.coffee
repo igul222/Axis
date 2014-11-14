@@ -15,14 +15,13 @@ module.exports = class GameStateGenerator
 
       @state = @state.tick()
 
-      if @time == @nextMoveTime
-
-        console.log 'handling move', @game.moves[@nextMoveIndex]
+      while @time == @nextMoveTime
         @state = @state.handleMove(@game.moves[@nextMoveIndex])
-        console.log 'FAILED' unless @state
 
         if @nextMoveIndex + 1 < @game.moves.length
           @nextMoveIndex++
           @nextMoveTime = @game.moves[@nextMoveIndex].t
+        else
+          break
 
     return @state

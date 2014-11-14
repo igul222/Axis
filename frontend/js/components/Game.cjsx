@@ -49,19 +49,20 @@ module.exports = React.createClass(
             <div />
         }
       </div>
-
-      <div id="page-content-wrapper">
-        <div className="computer-wrapper">
-          {
-            if not @state.data?
-              <div />
-            else if @state.data.gameState instanceof LobbyGameState
-              <Lobby data={@state.data} pushMove={@pushMove} />
-            else if @state.data.gameState instanceof StartedGameState
-              <StartedGame data={@state.data} pushMove={@pushMove} />
-            else
-              <FinishedGame data={@state.data} pushMove={@pushMove} />
-          }
+      <div className="page-content-outer-wrapper">
+        <div id="page-content-wrapper">
+          <div className="computer-wrapper">
+            {
+              if not @state.data?
+                <div />
+              else if @state.data.gameState instanceof LobbyGameState
+                <Lobby data={@state.data} pushMove={@pushMove} />
+              else if @state.data.gameState instanceof StartedGameState
+                <StartedGame data={@state.data} pushMove={@pushMove} />
+              else
+                <FinishedGame data={@state.data} pushMove={@pushMove} />
+            }
+          </div>
         </div>
       </div>
     </div>

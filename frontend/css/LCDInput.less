@@ -47,7 +47,18 @@
 
   input.expression-simple-input {
     color: #333;
-    padding-right: 0;
+    -webkit-text-fill-color:#333;
+    -webkit-opacity: 1;
+    padding: 0;
+  }
+
+  @media (max-width: @screen-xs-max) {
+    font-size: 20px;
+    padding: 0 0.25em;
+
+    input.expression-simple-input {
+      padding: 0 0 1px 0;
+    }
   }
 }
 

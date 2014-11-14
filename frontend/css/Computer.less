@@ -39,7 +39,11 @@
 }
 
 #controls {
-  .make-row();
+  display: -webkit-box;
+  display: -moz-box;
+  display: -ms-flexbox;
+  display: -webkit-flex;
+  display: flex;
   margin-top: 20px;
 }
 
@@ -54,8 +58,9 @@
 }
 
 #time-remaining-wrapper {
-  .make-sm-column(3);
-  .make-md-column(2);
+  -webkit-flex: 0 0 110px;
+  flex: 0 0 110px;
+  margin-right: 15px;
 }
 
 #time-remaining {
@@ -80,15 +85,15 @@
 }
 
 .expression-wrapper {
-  .make-sm-column(6);
-  .make-md-column(8);
-
+  flex: 1 1 auto;
+  -webkit-flex: 1 1 auto;
   @import 'LCDInput';
 }
 
 #fire-wrapper {
-  .make-sm-column(3);
-  .make-md-column(2);
+  margin-left: 15px;
+  -webkit-flex: 0 0 120px;
+  flex: 0 0 120px;
 }
 
 @font-face {
@@ -108,4 +113,34 @@
 
   font-size: @font-size;
   line-height: 100%;
+}
+
+@media (max-width: @screen-xs-max) {
+  .screen-wrapper {
+    border-radius: 10px;
+  }
+
+  #controls {
+    margin-top: 5px;
+
+    #time-remaining-wrapper {
+      flex: 0 0 40px;
+      -webkit-flex: 0 0 40px;
+      margin-right: 5px;
+    
+
+      #time-remaining {
+        border-radius: 3px;
+        font-size: 25px;
+        // The font includes an 18.5% (13px) bottom padding
+        padding: 5px 5px 0 5px;
+      }
+    }
+
+    #fire-wrapper {
+      flex: 0 0 60px;
+      -webkit-flex: 0 0 60px;
+      margin-left: 5px;
+    }
+  }
 }

@@ -21,6 +21,7 @@ module.exports = React.createClass(
     e.target.setSelectionRange(0, e.target.value.length)
 
   switchPlayerTeam: (playerId) ->
+    console.log 'switchPlayerTeam ', playerId
     @props.pushMove(Moves.switchTeam(playerId))
 
   gameCanStart: ->
@@ -36,22 +37,23 @@ module.exports = React.createClass(
         <div className="lobby-wrapper">
           <div className="url-wrapper">
             <span>share this url to play with your friends: </span>
-            <input value={window.location.href} onClick={@handleURLClick} />
+            <input value={window.location.href} onClick={@handleURLClick} readOnly={true} />
           </div>
 
           <div className="teams">
             {
               for team, index in @props.data.gameState.players.teams
-                <div className="team">
+                <div className="team" key={index}>
                   <div className="team-heading">Team {index + 1}</div>
                   {
                     for player in team.players
-                      <div className="player">
-                        <span className="name">┕  {player.name}</span>
-                        <button onClick={ => @switchPlayerTeam(player.id) }>
-                          [switch]
-                        </button>
-                      </div>
+                      do (player) =>
+                        <div className="player" key={player.id}>
+                          <span className="name">┕  {player.name}</span>
+                          <button onClick={ => @switchPlayerTeam(player.id) }>
+                            [switch]
+                          </button>
+                        </div>
                   }
                 </div>
             }

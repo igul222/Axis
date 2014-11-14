@@ -11,11 +11,18 @@
   left: 0;
   right: 0;
 
+  @media (max-width: @screen-xs-max) {
+    font-size: 10px;
+  }
 
   .url-wrapper {
     text-align: center;
     margin-bottom: 50px;
     
+    @media (max-width: @screen-xs-max) {
+      margin-bottom: 0px;
+    }
+
     input {
       -moz-user-select: text;
       -khtml-user-select: text;
@@ -51,6 +58,10 @@
       .team-heading {
         margin-bottom: 20px;
         font-weight: bold;
+
+        @media (max-width: @screen-xs-max) {
+          margin-bottom: 5px;
+        }
       }
 
       .player {
@@ -65,44 +76,3 @@
     }
   }
 }
-
-// .lobby {
-//   font-family: "Monaco";
-//   color: rgb(210, 245, 210);
-
-//   .team-heading{
-//     text-align: center;
-//     text-decoration: underline;
-//   }
-
-//   ul {
-//     list-style: none;
-//     padding-left: 0;
-//   }
-
-//   li.player{
-//     text-align: center;
-//     padding: 15px;
-
-//     .switch-team-button{
-//       width: 50px;
-//       color: rgb(210, 245, 210);
-//       background-color: rgba(0,0,0,0);
-//       border-color: rgb(210,245,210);
-//     }
-//   }
-// }
-
-// .share{
-//   border-color: black;
-//   margin-top: 75px;
-//   font-family: "Monaco";
-//   .input-group-addon{
-//     background-color: rgb(159, 159, 140);
-//     color: #333;
-//   }
-//   input{
-//     background-color: #111;
-//     color: rgb(210, 240, 210);
-//   }
-// }
