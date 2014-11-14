@@ -3,7 +3,7 @@ Client = require('../Client.coffee')
 LobbyGameState = require('../../../shared/LobbyGameState.coffee')
 StartedGameState = require('../../../shared/StartedGameState.coffee')
 
-Chat = require('./chat.cjsx')
+Chat = require('./Chat.cjsx')
 Lobby = require('./Lobby.cjsx')
 StartedGame = require('./StartedGame.cjsx')
 FinishedGame = require('./FinishedGame.cjsx')
