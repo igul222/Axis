@@ -5,6 +5,7 @@ module.exports = React.createClass(
   displayName: 'Lobby'
 
   getInitialState: ->
+    console.log(@props.data.playerId, @props.data.gameState.players.get(@props.data.playerId))
     name: @props.data.gameState.players.get(@props.data.playerId).name
     validatesName: false
 
@@ -60,22 +61,20 @@ module.exports = React.createClass(
           </div>
         </div>
 
-      <div>
-        <Computer
-          content={content}
-          timeRemaining='--'
-          value={
-            if @gameCanStart() 
-              "Press START to begin!"
-            else 
-              "Waiting for more players..."
-          }
-          buttonTitle='START'
-          buttonEnabled={@gameCanStart()}
-          buttonColor='black'
-          onSubmit={@startGame}
-        />
-      </div>
+      <Computer
+        content={content}
+        timeRemaining='--'
+        value={
+          if @gameCanStart() 
+            "Press START to begin!"
+          else 
+            "Waiting for more players..."
+        }
+        buttonTitle='START'
+        buttonEnabled={@gameCanStart()}
+        buttonColor='black'
+        onSubmit={@startGame}
+      />
 
     else
       <Computer
