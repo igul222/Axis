@@ -1,6 +1,7 @@
 Button = require('./Button.cjsx')
 Computer = require('./Computer.cjsx')
 Graph = require('./Graph.cjsx')
+Modal = require('./Modal.cjsx')
 
 GameState = require('../../../shared/GameState.coffee')
 Moves = require('../../../shared/Moves.coffee')
@@ -34,6 +35,9 @@ Instr = React.createClass(
 module.exports = React.createClass(
   displayName: 'Home'
 
+  getInitialState: ->
+    modalContent: null
+
   handleJoinGame: ->
     joinGame.public()
 
@@ -41,7 +45,7 @@ module.exports = React.createClass(
     joinGame.private()
 
   handleWatchVideo: ->
-    window.location = "https://www.youtube.com/watch?v=yO0aEv_0Aeo"
+    @refs.modal.show()
 
   getDataForStep: (step)->
     state = GameState.new(0.314159)
@@ -70,6 +74,9 @@ module.exports = React.createClass(
 
   render: ->
     <div className="container home-container">
+      <Modal ref="modal">
+        <iframe width="100%" height="100%" src="//www.youtube.com/embed/yO0aEv_0Aeo" frameBorder="0" allowFullScreen></iframe>
+      </Modal>
       <div className="row">
         <div className="home-left">
           <img className='logo' src="/logo.png" />

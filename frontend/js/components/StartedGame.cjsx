@@ -11,7 +11,7 @@ module.exports = React.createClass(
   displayName: 'StartedGame'
 
   getInitialState: ->
-    expression: 'sin(x)'
+    expressions: ['sin(x)', 'sin(x)']
 
   componentDidMount: ->
     @sounds = 
@@ -30,19 +30,26 @@ module.exports = React.createClass(
     gameState = @props.data.gameState
     gameState instanceof TypingFunctionGameState and
     gameState.players.active().player.id == @props.data.playerId and
-    validateExpression(@state.expression)
+    validateExpression(@state.expressions[@getActiveDotIndex()])
 
   handleSubmit: ->
-    @props.pushMove(Moves.fire(@state.expression)) if @canFire()    
+    @props.pushMove(Moves.fire(@state.expressions[@getActiveDotIndex()])) if @canFire()
+
+  getActiveDotIndex: ->
+    for dot, index in @props.data.gameState.players.get(@props.data.playerId).dots
+      if dot.active then return index
 
   handleExpressionChange: (newExpression) ->
-    @setState(expression: newExpression)
+    expressions = @state.expressions
+    expressions[@getActiveDotIndex()] = newExpression
+    @setState(expressions: expressions)
 
   render: ->
+
     <Computer
       content={<Graph data={@props.data} />}
       timeRemaining={('0'+Math.round(@props.data.gameState.turnTime/100)).slice(-2)}
-      value={@state.expression}
+      value={@state.expressions[@getActiveDotIndex()]}
       onValueChange={@handleExpressionChange}
       buttonTitle='FIRE'
       buttonEnabled={@canFire()}

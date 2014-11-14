@@ -2,7 +2,7 @@
 
 GameStateGenerator = require('../../shared/GameStateGenerator.coffee')
 
-module.exports = class ClientSubscription
+module.exports = class Client
   
   constructor: (@socket, @gameId, @callback) ->
     _receivedData = (data) =>
