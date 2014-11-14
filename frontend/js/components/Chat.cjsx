@@ -21,6 +21,7 @@ module.exports = React.createClass(
 			</div>
 
 		<div className="chat">
+			<a href="/"><img className='logo-small pull-right' src="/logo-small.png" /></a>
 			<h2 className="chat-heading">MESSAGES</h2>
 			<div className="chats">
 				{messages}
