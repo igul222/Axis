@@ -26,11 +26,20 @@ describe 'Players', ->
 
     it 'assigns players default names', ->
       assert players.teams[0].players[0].name == 'Player 1'
-      assert players.teams[1].players[0].name == 'Player 2'
+
+    it "changes players' names", ->
+      players.changeName(2, "William")
+      assert players.teams[1].players[0].name == 'William'
 
     it 'removes players from state', ->
       players.remove(1)
       assert players.teams[0].players.length == 0
+
+    it 'switches players to the opposite team', ->
+      players.switchTeam(1)
+      players.switchTeam(2)
+      assert players.teams[0].players[0].id == 2
+      assert players.teams[1].players[0].id == 1
 
   describe 'when started', ->
     beforeEach ->

@@ -63,15 +63,13 @@ module.exports = class Players
       team.players.push
         id: id
         name: 'Player ' + (@_players().length + 1)
+        nameChanged: false
         active: false
         dots: []
-
-      @_updateActive()
 
   remove: (id) ->
     for team in @teams
       team.players = _.reject(team.players, (p) -> p.id == id)
-    @_updateActive()
 
   gameStarted: (obstacles, rand, xMax, yMax) ->
     @_started = true
@@ -109,12 +107,28 @@ module.exports = class Players
     recursivelySetActive(@teams)
     @_updateActive()
 
+  changeName: (id, name)->
+    player = @get(id)
+    player.name = name
+    player.nameChanged = true
+
+
   kill: (id) ->
     for team in @teams
       for player in team.players
         if player.id == id
           for dot in player.dots
             dot.alive = false
+
+  switchTeam: (id) ->
+    for team, index in @teams
+      for player in team.players
+        if player.id == id
+          newTeam = if index == 0 then @teams[1] else @teams[0]
+          oldPlayer = player
+
+    @remove(id)
+    newTeam.players.push(oldPlayer)
 
   # Advance the game by one turn, updating team/player/dot active values
   # Returns true on success (i.e. we advanced the turn), false on failure (i.e. the game is over)

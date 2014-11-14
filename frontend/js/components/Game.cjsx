@@ -36,7 +36,6 @@ module.exports = React.createClass(
     @setState(sidebarActive: !@state.sidebarActive)
 
   pushMove: (move) ->
-    console.log 'pushMove'
     @client.pushMove(move)
 
   render: ->

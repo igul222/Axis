@@ -35,6 +35,10 @@ describe 'GameState', ->
     state.handleMove(move)
     assert !state.players.get(1)
 
+  it 'returns a valid state even when given invalid moves', ->
+    state = state.handleMove({invalid: 'yup'})
+    assert state instanceof GameState
+
   describe 'with a player', ->
     beforeEach ->
       state.handleMove(Moves.addPlayer(1))
