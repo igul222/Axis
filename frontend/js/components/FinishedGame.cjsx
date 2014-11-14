@@ -8,7 +8,7 @@ module.exports = React.createClass(
     joinGame.public()
 
   render: ->
-    content = <div className="finished-game-text">
+    content = <div className="centertext glowtext">
       {
         if @props.data.gameState.players.isWinner(@props.data.playerId)
           "YOU WIN!"
@@ -20,7 +20,7 @@ module.exports = React.createClass(
     <Computer
       content={content}
       timeRemaining='--'
-      value="Press PLAY to play again..."
+      value="Play again?"
       buttonTitle='PLAY'
       buttonEnabled={true}
       buttonColor='black'

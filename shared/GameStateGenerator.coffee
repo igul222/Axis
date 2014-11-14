@@ -17,7 +17,9 @@ module.exports = class GameStateGenerator
 
       if @time == @nextMoveTime
 
+        console.log 'handling move', @game.moves[@nextMoveIndex]
         @state = @state.handleMove(@game.moves[@nextMoveIndex])
+        console.log 'FAILED' unless @state
 
         if @nextMoveIndex + 1 < @game.moves.length
           @nextMoveIndex++

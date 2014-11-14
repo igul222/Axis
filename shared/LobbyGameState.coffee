@@ -15,12 +15,13 @@ module.exports = class LobbyGameState extends GameState
       when 'changeName'
         if @players.get(move.agentId)
           @players.changeName(move.agentId, move.name)
-          return this
+          @updated = true
+        return this
 
       when 'switchTeam'
         @players.switchTeam(move.playerId)
         @updated = true
-
+        return this
           
       when 'start'
         if @players.get(move.agentId) and 

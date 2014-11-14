@@ -8,50 +8,56 @@ module.exports = React.createClass(
     name: @props.data.gameState.players.get(@props.data.playerId).name
     validatesName: false
 
-  gameCanStart: ->
-    @props.data.gameState.players.teams[0].players.length > 0 and
-    @props.data.gameState.players.teams[1].players.length > 0
-
   nameChanged: (newName)->
     @setState(name: newName)
 
   nameValid: ->
     @state.name.trim() != ''
 
-  changeName: ->
+  submitName: ->
     @props.pushMove(Moves.changeName(@state.name))
 
-  handleSubmit: ->
-    @props.pushMove(Moves.start())
+  handleURLClick: (e) ->
+    e.target.setSelectionRange(0, e.target.value.length)
 
-  switchTeam: (id) ->
-    @props.pushMove(Moves.switchTeam(id))
+  switchPlayerTeam: (playerId) ->
+    @props.pushMove(Moves.switchTeam(playerId))
+
+  gameCanStart: ->
+    @props.data.gameState.players.teams[0].players.length > 0 and
+    @props.data.gameState.players.teams[1].players.length > 0
+
+  startGame: ->
+    @props.pushMove(Moves.start())
 
   render: ->
     if @props.data.gameState.players.get(@props.data.playerId).nameChanged
-      teams = @props.data.gameState.players.teams.map (team, index) => team.players.map (player) =>
-        direction = if index==0 then '->' else '<-'
-        <li className ="player" key={player.id}>
-          {player.name}
-          <br />
-          <button
-            className="button switch-team-button"
-            onClick={=>@switchTeam(player.id)}>
-            {direction}
-          </button>
-        </li>
       content = 
-        <div className="row lobby">
-          <div className="col-sm-5 col-sm-offset-1">
-            <h2 className="team-heading">Team 1</h2>
-            <ul>{teams[0]}</ul>
+        <div className="lobby-wrapper">
+          <div className="url-wrapper">
+            <span>share this url to play with your friends: </span>
+            <input value={window.location.href} onClick={@handleURLClick} />
           </div>
-          <div className="col-sm-5">
-            <h2 className="team-heading">Team 2</h2>
-            <ul>{teams[1]}</ul>
+
+          <div className="teams">
+            {
+              for team, index in @props.data.gameState.players.teams
+                <div className="team">
+                  <div className="team-heading">Team {index + 1}</div>
+                  {
+                    for player in team.players
+                      <div className="player">
+                        <span className="name">┕  {player.name}</span>
+                        <button onClick={ => @switchPlayerTeam(player.id) }>
+                          [switch]
+                        </button>
+                      </div>
+                  }
+                </div>
+            }
           </div>
-          <div className="col-sm-1" />
         </div>
+
       <div>
         <Computer
           content={content}
@@ -65,31 +71,19 @@ module.exports = React.createClass(
           buttonTitle='START'
           buttonEnabled={@gameCanStart()}
           buttonColor='black'
-          onSubmit={@handleSubmit}
+          onSubmit={@startGame}
         />
-
-        <div className="input-group share">
-          <span className="input-group-addon">share this url to play with your friends</span>
-          <input type="text" className="form-control" value={window.location.href}>
-          </input>
-        </div>
       </div>
 
     else
-      content =
-        <div className="row finished-game-text">
-          <div className="col-sm-12">
-            Enter your nickname below
-          </div>
-        </div>
       <Computer
-        content={content}
+        content={<div className="glowtext centertext">Type your nickname below.</div>}
         timeRemaining='--'
         value={@state.name}
         onValueChange={@nameChanged}
         buttonTitle='JOIN'
         buttonEnabled={@nameValid()}
         buttonColor='black'
-        onSubmit={@changeName}
+        onSubmit={@submitName}
       />
 )

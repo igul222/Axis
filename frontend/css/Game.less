@@ -5,6 +5,7 @@
 
 #wrapper {
  padding-right: 250px;
+ height: 100vh;
 
   #sidebar-toggle {
     display: none;
@@ -26,6 +27,9 @@
   //
   // Basically you should just give up on whatever it is you were
   // trying to do that led you here.
+  -webkit-transform-style: preserve-3d;
+  -moz-transform-style: preserve-3d;
+  transform-style: preserve-3d;
   #page-content-wrapper {
     // width = 40px + 1.667*(height - 146px)
     // height = ((width - 40px) / 1.667) + 146px

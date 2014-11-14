@@ -3,17 +3,20 @@ uuid = require('uuid')
 
 module.exports = class Game
   @games = {}
-  @openGameId = uuid.v4()
+  @openGameId = null
+
+  @_generateGameId: ->
+    uuid.v4().substr(0,8)
 
   @getById: (id) ->
     @games[id]
 
   @resetOpenGame: ->
-    @openGameId = uuid.v4()
+    @openGameId = @_generateGameId()
     @games[@openGameId] = new Game()
 
   @createPrivateGame: ->
-    gameId = uuid.v4()
+    gameId = @_generateGameId()
     @games[gameId] = new Game()
     return gameId
 

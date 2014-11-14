@@ -1,42 +1,108 @@
 @import 'Computer';
 
-.lobby {
-  font-family: "Monaco";
-  color: rgb(210, 245, 210);
+.lobby-wrapper {
+  max-width: 700px;
+  max-height: 300px;
 
-  .team-heading{
+  position: absolute;
+  margin: auto;
+  top: 0;
+  bottom: 0;
+  left: 0;
+  right: 0;
+
+
+  .url-wrapper {
     text-align: center;
-    text-decoration: underline;
+    margin-bottom: 50px;
+    
+    input {
+      -moz-user-select: text;
+      -khtml-user-select: text;
+      -webkit-user-select: text;
+      -ms-user-select: text;
+      user-select: text;
+
+      background-color: rgba(0, 255, 0, 0.25);
+      border: none;
+      padding: 5px;
+
+      &:focus {
+        outline: 1px solid #0f0;
+
+        &::selection {
+          background-color: #0f0;
+        }
+
+        &::-moz-selection {
+          background-color: #0f0;
+        }
+      }
+    }
   }
 
-  ul {
-    list-style: none;
-    padding-left: 0;
-  }
+  .teams {
+    .make-row();
+    padding: 10px;
 
-  li.player{
-    text-align: center;
-    padding: 15px;
+    .team {
+      .make-sm-column(6);
 
-    .switch-team-button{
-      width: 50px;
-      color: rgb(210, 245, 210);
-      background-color: rgba(0,0,0,0);
-      border-color: rgb(210,245,210);
+      .team-heading {
+        margin-bottom: 20px;
+        font-weight: bold;
+      }
+
+      .player {
+        margin-left: 20px;
+        button {
+          margin-left: 10px;
+          display: inline;
+          background-color: rgba(0, 255, 0, 0.25);
+          border: none;
+        }
+      }
     }
   }
 }
 
-.share{
-  border-color: black;
-  margin-top: 75px;
-  font-family: "Monaco";
-  .input-group-addon{
-    background-color: rgb(159, 159, 140);
-    color: #333;
-  }
-  input{
-    background-color: #111;
-    color: rgb(210, 240, 210);
-  }
-}
+// .lobby {
+//   font-family: "Monaco";
+//   color: rgb(210, 245, 210);
+
+//   .team-heading{
+//     text-align: center;
+//     text-decoration: underline;
+//   }
+
+//   ul {
+//     list-style: none;
+//     padding-left: 0;
+//   }
+
+//   li.player{
+//     text-align: center;
+//     padding: 15px;
+
+//     .switch-team-button{
+//       width: 50px;
+//       color: rgb(210, 245, 210);
+//       background-color: rgba(0,0,0,0);
+//       border-color: rgb(210,245,210);
+//     }
+//   }
+// }
+
+// .share{
+//   border-color: black;
+//   margin-top: 75px;
+//   font-family: "Monaco";
+//   .input-group-addon{
+//     background-color: rgb(159, 159, 140);
+//     color: #333;
+//   }
+//   input{
+//     background-color: #111;
+//     color: rgb(210, 240, 210);
+//   }
+// }

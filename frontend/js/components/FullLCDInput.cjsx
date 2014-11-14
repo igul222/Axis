@@ -51,6 +51,9 @@ module.exports = React.createClass(
           @pollingTimerId = window.requestAnimationFrame(poll)
       poll()
 
+      @refs.input.getDOMNode().focus()
+      @refs.input.getDOMNode().setSelectionRange(@props.value.length, @props.value.length)
+
   startBlink: ->
     @stopBlink()
     @setState(cursorBlink: true)

@@ -24,6 +24,17 @@
     bottom: 0;
     left:   0;
     margin: auto;
+
+    // Text styles
+    -moz-user-select: none;
+    -khtml-user-select: none;
+    -webkit-user-select: none;
+    -ms-user-select: none;
+    user-select: none;
+    font-family: "Monaco";
+    color: white;
+    text-shadow: 0px 0px 4px rgb(0,255,0);
+    -webkit-text-stroke: 0.25px rgb(0, 255, 0);
   }
 }
 
@@ -78,4 +89,23 @@
 #fire-wrapper {
   .make-sm-column(3);
   .make-md-column(2);
+}
+
+@font-face {
+  font-family: 'Monaco';
+  src: url('/monaco.otf');
+}
+
+.centertext {
+  @font-size: 14px;
+
+  width: 100%;
+  text-align: center;
+
+  position: absolute;
+  top: 50%;
+  margin-top: -0.5 * @font-size;
+
+  font-size: @font-size;
+  line-height: 100%;
 }
