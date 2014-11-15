@@ -8,6 +8,15 @@ module.exports = React.createClass(
 	getInitialState: ->
 		message: ''
 
+	componentWillUpdate: ->
+		node = @refs.messages.getDOMNode()
+		@shouldScrollBottom = node.scrollTop + node.offsetHeight == node.scrollHeight;
+
+	componentDidUpdate: ->
+		if @shouldScrollBottom
+  		node = @refs.messages.getDOMNode()
+  		node.scrollTop = node.scrollHeight
+
 	sendMessage: (evt) ->
 		evt.preventDefault()
 		@props.pushMove(Moves.sendMessage(@state.message))
@@ -23,7 +32,7 @@ module.exports = React.createClass(
 		<div className="chat">
 			<a href="/"><img className='logo-small pull-right' src="/logo-small.png" /></a>
 			<h2 className="chat-heading">MESSAGES</h2>
-			<div className="chats">
+			<div className="chats" ref="messages">
 				{messages}
 			</div>
 			<form>
