@@ -5,6 +5,7 @@
     "browserify": "^4.1.8",
     "coffee-reactify": "^0.1.2",
     "coffee-script": "^1.7.1",
+    "compression": "^1.2.0",
     "deepcopy": "^0.3.3",
     "dotenv": "^0.4.0",
     "envify": "^1.2.1",

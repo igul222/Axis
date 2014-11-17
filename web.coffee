@@ -5,6 +5,9 @@
 express = require('express')
 app     = express()
 http    = require('http').Server(app)
+compress = require('compression')(
+  threshold: 95
+);
 
 # Socket.io
 io      = require('socket.io')(http);
@@ -13,6 +16,7 @@ Game = require('./backend/Game')
 Moves = require('./shared/Moves')
 
 app.set 'port', process.env.PORT || 3000
+app.use(compress);
 app.use express.static('public')
 
 if app.get('env')=='development'
