@@ -3,14 +3,6 @@
   src: url('/futura-condensed.ttf');
 }
 
-.blurry{
-  -webkit-filter: blur(5px);
-  -moz-filter: blur(5px);
-  -o-filter: blur(5px);
-  -ms-filter: blur(5px);
-  filter: blur(5px);
-}
-
 .chat {
   background-color: rgba(0, 0, 0, 0.5);
   box-shadow: inset 10px 0px 20px 0px rgba(0,0,0,0.75);
@@ -89,8 +81,19 @@
       }
     }
   }
+}
 
-  @media (max-width: @screen-xs-max) {
+@media (max-width: @screen-xs-max) {
+
+  .blurry{
+    -webkit-filter: blur(5px);
+    -moz-filter: blur(5px);
+    -o-filter: blur(5px);
+    -ms-filter: blur(5px);
+    filter: blur(5px);
+  }
+
+  .chat{
     .logo-small{
       width: 20%;
       border: none;
