@@ -30,26 +30,23 @@ module.exports = React.createClass(
     gameState = @props.data.gameState
     gameState instanceof TypingFunctionGameState and
     gameState.players.active().player.id == @props.data.playerId and
-    validateExpression(@state.expressions[@getActiveDotIndex()].toLowerCase())
+    validateExpression(@currentExpression().toLowerCase())
 
   handleSubmit: ->
-    @props.pushMove(Moves.fire(@state.expressions[@getActiveDotIndex()].toLowerCase())) if @canFire()
+    @props.pushMove(Moves.fire(@currentExpression().toLowerCase())) if @canFire()
 
-  getActiveDotIndex: ->
-    for dot, index in @props.data.gameState.players.get(@props.data.playerId).dots
-      if dot.active then return index
+  currentExpression: ->
+    @state.expressions[@props.data.gameState.players.getNextDotIndex(@props.data.playerId)]
 
   handleExpressionChange: (newExpression) ->
-    expressions = @state.expressions
-    expressions[@getActiveDotIndex()] = newExpression
-    @setState(expressions: expressions)
+    @state.expressions[@props.data.gameState.players.getNextDotIndex(@props.data.playerId)] = newExpression
+    @forceUpdate()
 
   render: ->
-
     <Computer
       content={<Graph data={@props.data} />}
       timeRemaining={('0'+Math.round(@props.data.gameState.turnTime/100)).slice(-2)}
-      value={@state.expressions[@getActiveDotIndex()]}
+      value={@currentExpression()}
       onValueChange={@handleExpressionChange}
       buttonTitle='FIRE'
       buttonEnabled={@canFire()}

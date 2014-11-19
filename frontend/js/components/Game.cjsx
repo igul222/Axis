@@ -29,9 +29,10 @@ module.exports = React.createClass(
 
   initializeClient: (gameId) ->
     @client = new Client(io(multiplex: false), gameId, (data) =>
-      @setState({data})
-      # For debugging
-      window.data = data
+      if @isMounted()
+        @setState({data})
+        # For debugging
+        window.data = data
     )
 
   toggleSidebar: ->

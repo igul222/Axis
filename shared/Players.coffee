@@ -45,6 +45,11 @@ module.exports = class Players
   isWinner: (playerId) ->
     return _.where(@get(playerId).dots, {alive: true}).length > 0
 
+  getNextDotIndex: (playerId) ->
+    for dot, index in @get(playerId).dots
+      return index if dot.active and dot.alive
+    return undefined
+
   ##########
   # Commands
   ##########

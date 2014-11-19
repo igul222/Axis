@@ -74,6 +74,16 @@ describe 'Players', ->
       assert players.isFlipped(1) == false
       assert players.isFlipped(2) == true
 
+    it 'indicates that the game is not over', ->
+      assert players.gameOver() == false
+
+    it "returns a player's next dot index", ->
+      assert players.getNextDotIndex(1) == 0
+      players.advance()
+      assert players.getNextDotIndex(1) == 1
+      players.kill(1)
+      assert players.getNextDotIndex(1) == undefined
+
     describe 'advancing turns', ->
 
       it 'should advance to the next turn', ->
@@ -88,9 +98,6 @@ describe 'Players', ->
         assert players.active().team == players.teams[0]
         assert players.active().player == players.teams[0].players[0]
         assert players.active().dot == players.teams[0].players[0].dots[1]
-
-    it 'indicates that the game is not over', ->
-      assert players.gameOver() == false
 
     describe 'when finished', ->
       beforeEach ->

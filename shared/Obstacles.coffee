@@ -8,8 +8,8 @@ module.exports = class Obstacles
   @PathResolution: 0.5
   @BlastRadius: 1
 
-  constructor: (rand, xMax, yMax) ->
-    @_obstacles     = @_generateObstacles(rand, xMax, yMax)
+  constructor: (rand, @_xMax, @_yMax) ->
+    @_obstacles     = @_generateObstacles(rand, @_xMax, @_yMax)
     @_antiobstacles = []
     @_generateObstaclePaths()
 
@@ -43,7 +43,14 @@ module.exports = class Obstacles
       # Start at a known inside point and move right until we hit a boundary.
       x = obstacle.x
       y = obstacle.y
-      x += cellSize until MarchingSquares.isBoundary(hitTest, x, y, cellSize)
+      skip = false
+      until MarchingSquares.isBoundary(hitTest, x, y, cellSize)
+        x += cellSize
+        if x > @_xMax
+          skip = true
+          break
+      if skip
+        continue
 
       # Overlapping or nearby circles generate identical paths. Check if the
       # boundary point is on an existing path before generating another one.
