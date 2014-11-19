@@ -46,7 +46,9 @@ module.exports = class StartedGameState extends GameState
         player = @players.get(move.agentId)
         if player.dots
           for dot, index in player.dots
-            dot.expression = move.expressions[index]
+            # TODO: fix this awful awful hack
+            unless dot.expression == '' and move.expressions[index] == 'sin(x)'
+              dot.expression = move.expressions[index]
           @updated = true
         return this
 
