@@ -10,12 +10,12 @@ module.exports = React.createClass(
 
 	componentWillUpdate: ->
 		node = @refs.messages.getDOMNode()
-		@shouldScrollBottom = node.scrollTop + node.offsetHeight == node.scrollHeight;
+		@shouldScrollBottom = node.scrollTop + node.offsetHeight == node.scrollHeight
 
 	componentDidUpdate: ->
-		if @shouldScrollBottom
-		node = @refs.messages.getDOMNode()
-		node.scrollTop = node.scrollHeight
+    if @shouldScrollBottom
+      node = @refs.messages.getDOMNode()
+      node.scrollTop = node.scrollHeight
 
 	sendMessage: (evt) ->
 		evt.preventDefault()
