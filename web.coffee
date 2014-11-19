@@ -28,6 +28,7 @@ else
 playerCount = 0
 app.post '/joinPublicGame', (req, res) ->
   Game.resetOpenGame() if playerCount % 4 == 0
+  playerCount++
   res.send(Game.openGameId)
 
 app.post '/createPrivateGame', (req, res) ->
