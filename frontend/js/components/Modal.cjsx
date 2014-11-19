@@ -82,6 +82,7 @@ module.exports = React.createClass(
     return
 
   render: ->
+    content = if @state.visible then @props.children else ''
     <div 
       className={"overlay"+(if @state.visible then "" else " hidden")}
       ref="overlay"
@@ -95,7 +96,7 @@ module.exports = React.createClass(
         </div>
       </div>
       <div className="overlay-content">
-        {@props.children}
+        {content}
       </div>
     </div>
 )

@@ -30,10 +30,10 @@ module.exports = React.createClass(
     gameState = @props.data.gameState
     gameState instanceof TypingFunctionGameState and
     gameState.players.active().player.id == @props.data.playerId and
-    validateExpression(@state.expressions[@getActiveDotIndex()])
+    validateExpression(@state.expressions[@getActiveDotIndex()].toLowerCase())
 
   handleSubmit: ->
-    @props.pushMove(Moves.fire(@state.expressions[@getActiveDotIndex()])) if @canFire()
+    @props.pushMove(Moves.fire(@state.expressions[@getActiveDotIndex()].toLowerCase())) if @canFire()
 
   getActiveDotIndex: ->
     for dot, index in @props.data.gameState.players.get(@props.data.playerId).dots
