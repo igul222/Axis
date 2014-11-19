@@ -48,7 +48,6 @@ module.exports = class Players
   getNextDotIndex: (playerId) ->
     for dot, index in @get(playerId).dots
       return index if dot.active and dot.alive
-    return undefined
 
   ##########
   # Commands

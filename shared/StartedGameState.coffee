@@ -44,7 +44,7 @@ module.exports = class StartedGameState extends GameState
 
       when 'setExpressions'
         player = @players.get(move.agentId)
-        if player.dots
+        if player and player.dots
           for dot, index in player.dots
             # TODO: fix this awful awful hack
             unless dot.expression == '' and move.expressions[index] == 'sin(x)'
