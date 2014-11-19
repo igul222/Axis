@@ -30,6 +30,7 @@
     "seed-random": "^2.2.0",
     "sinon": "^1.10.3",
     "socket.io": "^1.0.4",
+    "socket.io-client": "^1.2.0",
     "tiny-lr": "0.0.9",
     "uuid": "^1.4.1",
     "viewport-units-buggyfill": "^0.4.1",

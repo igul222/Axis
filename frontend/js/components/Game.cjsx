@@ -8,6 +8,8 @@ Lobby = require('./Lobby.cjsx')
 StartedGame = require('./StartedGame.cjsx')
 FinishedGame = require('./FinishedGame.cjsx')
 
+io = require('socket.io-client')
+
 module.exports = React.createClass(
   displayName: 'Game'
 
