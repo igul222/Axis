@@ -49,7 +49,7 @@ module.exports = React.createClass(
             <div />
         }
       </div>
-      <div className="page-content-outer-wrapper">
+      <div className={React.addons.classSet(blurry: @state.sidebarActive)+" page-content-outer-wrapper"}>
         <div id="page-content-wrapper">
           <div className="computer-wrapper">
             {
