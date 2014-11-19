@@ -5,7 +5,6 @@ module.exports = React.createClass(
   displayName: 'Lobby'
 
   getInitialState: ->
-    console.log(@props.data.playerId, @props.data.gameState.players.get(@props.data.playerId))
     name: @props.data.gameState.players.get(@props.data.playerId).name
     validatesName: false
 

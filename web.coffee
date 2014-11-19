@@ -25,10 +25,9 @@ if app.get('env')=='development'
 else 
   app.use require('morgan')('default')
 
-openGamePlayers = 0
+Game.resetOpenGame()
 
 app.post '/joinPublicGame', (req, res) ->
-  Game.resetOpenGame() if openGamePlayers++ % 4 == 0
   res.send(Game.openGameId)
 
 app.post '/createPrivateGame', (req, res) ->
@@ -50,7 +49,6 @@ io.on 'connection', (socket) ->
         game.pushMove(move, socket.id)
         if move.type == 'start'
           Game.resetOpenGame()
-          openGamePlayers = 0
 
       socket.on 'disconnect', ->
         game.unsubscribe(socket.id)

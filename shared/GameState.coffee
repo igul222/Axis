@@ -31,7 +31,7 @@ module.exports = class GameState
   _gameStateTick: ->
     # Set updated every 500ms for animations
     @timer++
-    @updated = true if @timer % 10 == 0
+    @updated = true if @timer % 50 == 0
 
   handleMove: (move) ->
     switch move.type

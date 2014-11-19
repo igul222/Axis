@@ -15,6 +15,10 @@ module.exports = Moves =
   removePlayer: (playerId) ->
     return {type: 'removePlayer', playerId: playerId}
 
+  # Sets the given player's typed expressions.
+  setExpressions: (expressions) ->
+    return {type: 'setExpressions', expressions: expressions}
+
   # Fire the given function from the currently active dot. Only the currently
   # active player can issue this move.
   fire: (expression) ->

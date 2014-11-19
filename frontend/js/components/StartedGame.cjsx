@@ -1,11 +1,12 @@
 play = require('play-audio')
+_ = require('lodash')
 
 Computer = require('./Computer.cjsx')
 Graph = require('./Graph.cjsx')
 
 Moves = require('../../../shared/Moves.coffee')
 TypingFunctionGameState = require('../../../shared/TypingFunctionGameState.coffee')
-validateExpression = require('../../../shared/validateExpression.coffee')
+Expression = require('../../../shared/Expression.coffee')
 
 module.exports = React.createClass(
   displayName: 'StartedGame'
@@ -30,17 +31,24 @@ module.exports = React.createClass(
     gameState = @props.data.gameState
     gameState instanceof TypingFunctionGameState and
     gameState.players.active().player.id == @props.data.playerId and
-    validateExpression(@currentExpression().toLowerCase())
+    Expression.validate(@currentExpression())
 
   handleSubmit: ->
-    @props.pushMove(Moves.fire(@currentExpression().toLowerCase())) if @canFire()
+    @props.pushMove(Moves.fire(@currentExpression())) if @canFire()
 
   currentExpression: ->
     @state.expressions[@props.data.gameState.players.getNextDotIndex(@props.data.playerId)]
 
   handleExpressionChange: (newExpression) ->
-    @state.expressions[@props.data.gameState.players.getNextDotIndex(@props.data.playerId)] = newExpression
+    dotIndex = @props.data.gameState.players.getNextDotIndex(@props.data.playerId)
+    @state.expressions[dotIndex] = newExpression
     @forceUpdate()
+
+    @pushExpressions or= _.debounce( (_newExpressions) =>
+      @props.pushMove(Moves.setExpressions(_newExpressions))
+    , 1000)
+
+    @pushExpressions(@state.expressions)
 
   render: ->
     <Computer

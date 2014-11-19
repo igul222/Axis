@@ -3,10 +3,12 @@ _     = require('lodash')
 StartedGameState = require('../../../shared/StartedGameState.coffee')
 FiringGameState = require('../../../shared/FiringGameState.coffee')
 Players = require('../../../shared/Players.coffee')
+Expression = require('../../../shared/Expression.coffee')
 
 module.exports = React.createClass(
   AXIS_COLOR:            'rgb(245,255,245)'
   FUNCTION_COLOR:        'rgb(245,255,245)'
+  PREVIEW_FUNCTION_COLOR: 'rgba(245,255,245, 0.2)'
   DOT_COLOR:             'rgb(245,255,245)'
   ACTIVE_DOT_COLOR:      'rgb(245,255,245)'
   OBSTACLE_STROKE_COLOR: 'rgb(245,255,245)'
@@ -146,9 +148,22 @@ module.exports = React.createClass(
             if dot.alive then @TEXT_COLOR else @DEAD_TEXT_COLOR,
             {x: dot.x, y: dot.y + 1}
           )
+          if dot.alive
+            @drawText(
+              context, 
+              dot.expression,
+              @TEXT_COLOR,
+              {x: dot.x, y: dot.y - 2}
+            )
+            if Expression.validate(dot.expression)
+              xMax = if dot.x > 0 then -StartedGameState.XMax else StartedGameState.XMax
+              @drawEntireFunction(context, Expression.makeFn(dot.expression, dot, xMax), @PREVIEW_FUNCTION_COLOR)
 
-    if @props.data.gameState.fn
-      @drawEntireFunction(context)
+
+    fn = @props.data.gameState.fn
+    if fn
+      @fnX = fn.x
+      @drawEntireFunction(context, fn, @FUNCTION_COLOR)
 
     context.restore()
 
@@ -220,9 +235,8 @@ module.exports = React.createClass(
     context.fillStyle = color
     context.fillText(text.toUpperCase(), @_g2c(origin.x, origin.y)...)
 
-  drawEntireFunction: (context) ->
-    @fnX = @props.data.gameState.fn.x
-    @drawFunctionSegment(context, @props.data.gameState.fn.origin.x, @fnX)
+  drawEntireFunction: (context, fn, color) ->
+    @drawFunctionSegment(context, fn, fn.origin.x, fn.x, color)
 
   extendFunction: (dt) ->
     context = @getCanvas().getContext('2d')
@@ -232,24 +246,24 @@ module.exports = React.createClass(
     context.shadowBlur = @GLOW_RADIUS
 
     dx = dt * @props.data.gameState.fn.flip * FiringGameState.FunctionAnimationSpeed
-    @drawFunctionSegment(context, @fnX, @fnX + dx)
+    @drawFunctionSegment(context, @props.data.gameState.fn, @fnX, @fnX + dx, @FUNCTION_COLOR)
     @fnX += dx
 
     context.restore()
 
-  drawFunctionSegment: (context, x0, xMax) ->
+  drawFunctionSegment: (context, fn, x0, xMax, color) ->
     context.beginPath()
     context.lineWidth = @state.scale * @FUNCTION_THICKNESS
-    context.strokeStyle = @FUNCTION_COLOR
+    context.strokeStyle = color
 
-    context.moveTo(@_g2c(x0, @props.data.gameState.fn.evaluate(x0))...)
+    context.moveTo(@_g2c(x0, fn.evaluate(x0))...)
 
     dx = 1/@_toPx(1)
 
-    for x in [x0 .. xMax] by @props.data.gameState.fn.flip * dx
-      y = @props.data.gameState.fn.evaluate(x)
+    for x in [x0 .. xMax] by fn.flip * dx
+      y = fn.evaluate(x)
       context.lineTo(@_g2c(x, y)...)
-    context.lineTo(@_g2c(xMax, @props.data.gameState.fn.evaluate(xMax))...)
+    context.lineTo(@_g2c(xMax, fn.evaluate(xMax))...)
 
     context.stroke()
 )

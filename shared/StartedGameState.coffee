@@ -42,6 +42,14 @@ module.exports = class StartedGameState extends GameState
           @updated = true
         return this
 
+      when 'setExpressions'
+        player = @players.get(move.agentId)
+        if player.dots
+          for dot, index in player.dots
+            dot.expression = move.expressions[index]
+          @updated = true
+        return this
+
       else
         return super(move)
 

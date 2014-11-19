@@ -97,7 +97,7 @@ module.exports = class Players
             if dots.every((d) => Geometry.dist(point, d) > (2 * @constructor.DotRadius) + @constructor.DotDistanceMin) and 
                !obstacles.hitTest(point.x, point.y, @constructor.DotRadius)
 
-              dot = {x: point.x, y: point.y, alive: true, active: false}
+              dot = {x: point.x, y: point.y, alive: true, active: false, expression: 'sin(x)'}
 
               dots.push(dot)
               player.dots.push(dot)

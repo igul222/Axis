@@ -1,8 +1,7 @@
-math = require('mathjs')
-
 StartedGameState = require('./StartedGameState.coffee')
 FinishedGameState = require('./FinishedGameState.coffee')
 Geometry = require('./Geometry.coffee')
+Expression = require('./Expression.coffee')
 
 module.exports = class FiringGameState extends StartedGameState
   @FunctionAnimationSpeed: 0.05 # graph units per ms
@@ -12,22 +11,10 @@ module.exports = class FiringGameState extends StartedGameState
 
   constructor: (old, fireMove) ->
     super(old)
-
-    origin = @players.active().dot
-    flip = if origin.x > 0 then -1 else 1
-    compiledFunction = math.compile(fireMove.expression)
-    yTranslate = origin.y - compiledFunction.eval(x: 0)
-
     @playSound('fire')
 
-    @fn = {
-      expression: fireMove.expression
-      origin: origin
-      flip: flip
-      evaluate: (x) =>
-        compiledFunction.eval(x: flip*(x - origin.x)) + yTranslate
-      x: origin.x
-    }
+    origin = @players.active().dot
+    @fn = Expression.makeFn(fireMove.expression.toLowerCase(), origin, origin.x)
 
   tick: ->
     @_startedGameStateTick()
