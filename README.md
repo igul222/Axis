@@ -4,8 +4,8 @@ Axis is an online multiplayer artillery game where you fire math functions at ot
 https://calm-island-85326.herokuapp.com/
 
 
-###Deploy Heroku : 
-####gulp heroku:production
-####git add public/compiled/app.js -f 
-####git add public/compiled/app.css -f 
-####git push heroku master
+### Deploy Heroku : 
+#### gulp heroku:production
+#### git add public/compiled/app.js -f 
+#### git add public/compiled/app.css -f 
+#### git push heroku master
